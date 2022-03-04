@@ -1,0 +1,150 @@
+# RFC 1459
+# https://datatracker.ietf.org/doc/html/rfc1459
+
+* Section 1
+
+* Section 2
+
+2.2
+character set -> all unsigned char (8 bits), except control character used for message delimiters
+"{}|" respectively lower case of "[]\"
+
+2.3 Messages
+(up to) 3 parts: [prefix], command, command parameters (up to 15) separated by at least 1 space
+<prefix>   ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
+prefix indicates the true origin of the message
+prefix starts with ':'
+command : IRC command | 3-digit number string
+lines end with '\r\n'
+max 512 chars
+
+2.4 Numeric replies
+sender prefix, three digit numeric, and target of the reply
+
+
+* Section 3
+
+* Section 4 - Message details
+
+Parse message returning any appropriate errors.
+Fatal error -> notify client:
+- incorrect command
+- destination unknown: server
+- nick or channel names
+- not enough parameters or incorrect privileges
+If full set of parameters separated by ',' : reply must be sent for each item
+
+
+4.1 Connection Registration
+
+register a connection with an IRC server & correctly disconnect
+
+---*---
+
+PASS <password>
+
+// required before NICK, USER
+/* The password supplied
+   must match the one contained in the C/N lines (for servers) or I
+   lines (for clients)
+*/
+// multiple PASS -> use only last one
+
+---*---
+
+NICK <nickname>
+  ERR_NONICKNAMEGIVEN
+  ERR_ERRONEUSNICKNAME
+  ERR_NICKNAMEINUSE
+  ERR_NICKCOLLISION
+ex:
+  NICK Wiz         ; Introducing new nick "Wiz".
+  :WiZ NICK Kilroy ; WiZ changed his nickname to Kilroy.
+
+// give user a nickname or change the previous one
+// ?? nickname collision, what to do ?
+
+---*---
+
+USER <username> <hostname> <servername> <realname>
+  ERR_NEEDMOREPARAMS
+  ERR_ALREADYREGISTRED
+ex:
+  USER guest tolmoon tolsun :Ronnie Reagan
+
+// beginning of connection
+// <realname> prefixed by ':', may contain space
+
+---*---
+
+OPER <user> <password>
+  ERR_NEEDMOREPARAMS
+  RPL_YOUREOPER
+  ERR_NOOPERHOST
+  ERR_PASSWDMISMATCH
+ex:
+  OPER foo bar ; Attempt to register as an operator using a username of "foo" and "bar" as the password.
+
+---*---
+
+QUIT [<Quit message>]
+ex:
+  QUIT :Gone to have lunch        ; Preferred message format.
+
+// client session is ended with a quit message
+/* If, for some other reason, a client connection is closed without the
+   client issuing a QUIT command (e.g. client dies and EOF occurs
+   on socket), fill in quit message reflecting the nature of the event which
+   caused it to happen.
+*/
+
+---*---
+
+JOIN <channel>{,<channel>} [<key>{,<key>}]
+  ERR_NEEDMOREPARAMS
+  ERR_BANNEDFROMCHAN
+  ERR_INVITEONLYCHAN
+  ERR_BADCHANNELKEY
+  ERR_CHANNELISFULL
+  ERR_BADCHANMASK
+  ERR_NOSUCHCHANNEL
+  ERR_TOOMANYCHANNELS
+  RPL_TOPIC
+ex:
+   JOIN #foobar                    ; join channel #foobar.
+   JOIN &foo fubar                 ; join channel &foo using key "fubar".
+   JOIN #foo,&bar fubar            ; join channel #foo using key "fubar" and &bar using no key.
+   JOIN #foo,#bar fubar,foobar     ; join channel #foo using key "fubar" and channel #bar using key "foobar".
+   JOIN #foo,#bar                  ; join channels #foo and #bar.
+   :WiZ JOIN #Twilight_zone        ; JOIN message from WiZ
+
+// start listening a specific channel
+/* 1.  the user must be invited if the channel is invite-only;
+   2.  the user's nick/username/hostname must not match any active bans;
+   3.  the correct key (password) must be given if it is set.
+*/
+/* Once a user has joined a channel, they receive notice about all
+   commands their server receives which affect the channel.  This
+   includes MODE, KICK, PART, QUIT and of course PRIVMSG/NOTICE
+*/
+/* If a JOIN is successful, the user is then sent the channel's topic
+   (using RPL_TOPIC) and the list of users who are on the channel (using
+   RPL_NAMREPLY), which must include the user joining.
+*/
+
+---*---
+
+PART <channel>{,<channel>}
+  ERR_NEEDMOREPARAMS
+  ERR_NOSUCHCHANNEL
+  ERR_NOTONCHANNEL
+ex:
+   PART #twilight_zone             ; leave channel "#twilight_zone"
+   PART #oz-ops,&group5            ; leave both channels "&group5" and "#oz-ops".
+// client sending the message removed from list of active users for all given channels
+
+---*---
+
+
+SERVER_SERVER_ONLY_CMDS:
+SERVER, SQUIT
