@@ -1,15 +1,37 @@
 # RFC 1459
 # https://datatracker.ietf.org/doc/html/rfc1459
 
-* Section 1
+*************
+* Section 1 *
+*************
 
-* Section 2
+=== 1.3 Channels
 
-2.2
+Channel operator (1st joined and designated)
+Channels names are strings (beginning with a '&' or '#' character) of
+  length up to 200 characters.  Apart from the the requirement that the
+  first character being either '&' (only joinable on 1 server) or '#' (distributed, global)
+THE (unique) channel operator ("chop" or "chanop") is considered to 'own' that channel.
+The commands which may only be used by channel operators are:
+  KICK    - Eject a client from the channel
+  MODE    - Change the channel's mode
+  INVITE  - Invite a client to an invite-only channel (mode +i)
+  TOPIC   - Change the channel topic in a mode +t channel
+Is identified by the '@' symbol next to their nickname whenever it is associated with a channel
+(ie replies to the NAMES, WHO and WHOIS commands).
+
+
+*************
+* Section 2 *
+*************
+
+=== 2.2
 character set -> all unsigned char (8 bits), except control character used for message delimiters
 "{}|" respectively lower case of "[]\"
 
-2.3 Messages
+
+
+=== 2.3 Messages
 (up to) 3 parts: [prefix], command, command parameters (up to 15) separated by at least 1 space
 <prefix>   ::= <servername> | <nick> [ '!' <user> ] [ '@' <host> ]
 prefix indicates the true origin of the message
@@ -18,13 +40,24 @@ command : IRC command | 3-digit number string
 lines end with '\r\n'
 max 512 chars
 
-2.4 Numeric replies
+
+
+=== 2.4 Numeric replies
 sender prefix, three digit numeric, and target of the reply
 
 
-* Section 3
 
-* Section 4 - Message details
+
+*************
+* Section 3 *
+*************
+
+
+
+
+*******************************
+* Section 4 - Message details *
+*******************************
 
 Parse message returning any appropriate errors.
 Fatal error -> notify client:
@@ -35,9 +68,11 @@ Fatal error -> notify client:
 If full set of parameters separated by ',' : reply must be sent for each item
 
 
-4.1 Connection Registration
+
+==== 4.1 Connection Registration
 
 register a connection with an IRC server & correctly disconnect
+
 
 ---*---
 
@@ -50,13 +85,17 @@ PASS <password>
 */
 // multiple PASS -> use only last one
 
+
 ---*---
 
 NICK <nickname>
+
+  numeric responses:
   ERR_NONICKNAMEGIVEN
   ERR_ERRONEUSNICKNAME
   ERR_NICKNAMEINUSE
   ERR_NICKCOLLISION
+
 ex:
   NICK Wiz         ; Introducing new nick "Wiz".
   :WiZ NICK Kilroy ; WiZ changed his nickname to Kilroy.
@@ -64,30 +103,40 @@ ex:
 // give user a nickname or change the previous one
 // ?? nickname collision, what to do ?
 
+
 ---*---
 
 USER <username> <hostname> <servername> <realname>
+
+numeric responses:
   ERR_NEEDMOREPARAMS
   ERR_ALREADYREGISTRED
+
 ex:
   USER guest tolmoon tolsun :Ronnie Reagan
 
 // beginning of connection
 // <realname> prefixed by ':', may contain space
 
+
 ---*---
 
 OPER <user> <password>
+
+numeric responses:
   ERR_NEEDMOREPARAMS
   RPL_YOUREOPER
   ERR_NOOPERHOST
   ERR_PASSWDMISMATCH
+
 ex:
   OPER foo bar ; Attempt to register as an operator using a username of "foo" and "bar" as the password.
+
 
 ---*---
 
 QUIT [<Quit message>]
+
 ex:
   QUIT :Gone to have lunch        ; Preferred message format.
 
@@ -98,9 +147,22 @@ ex:
    caused it to happen.
 */
 
+
+
+=== 4.2 Channel operations
+
+Manipulating channels, their properties (channel modes), and their contents (typically clients)
+It is required that servers keep a nickname history to ensure that wherever a <nick> parameter is given, the
+server check its history in case it has recently been changed.
+
+
+
+---*---
 ---*---
 
 JOIN <channel>{,<channel>} [<key>{,<key>}]
+
+numeric responses:
   ERR_NEEDMOREPARAMS
   ERR_BANNEDFROMCHAN
   ERR_INVITEONLYCHAN
@@ -110,6 +172,7 @@ JOIN <channel>{,<channel>} [<key>{,<key>}]
   ERR_NOSUCHCHANNEL
   ERR_TOOMANYCHANNELS
   RPL_TOPIC
+
 ex:
    JOIN #foobar                    ; join channel #foobar.
    JOIN &foo fubar                 ; join channel &foo using key "fubar".
@@ -132,19 +195,513 @@ ex:
    RPL_NAMREPLY), which must include the user joining.
 */
 
+
 ---*---
 
 PART <channel>{,<channel>}
+
+numeric responses:
   ERR_NEEDMOREPARAMS
   ERR_NOSUCHCHANNEL
   ERR_NOTONCHANNEL
+
 ex:
    PART #twilight_zone             ; leave channel "#twilight_zone"
    PART #oz-ops,&group5            ; leave both channels "&group5" and "#oz-ops".
 // client sending the message removed from list of active users for all given channels
 
+
+
+---*---
+---*---
+
+Channel modes
+
+MODE <channel> {[+|-]|o|p|s|i|t|n|b|v} [<limit>] [<user>] [<ban mask>]
+ o - give/take channel operator privileges;
+ p - private channel flag;
+ s - secret channel flag;
+ i - invite-only channel flag;
+ t - topic settable by channel operator only flag;
+ n - no messages to channel from clients on the outside;
+ m - moderated channel;
+ l - set the user limit to channel;
+ b - set a ban mask to keep users out;
+ v - give/take the ability to speak on a moderated channel;
+ k - set a channel key (password).
+
+ex:
+  MODE #Finnish +im               ; Makes #Finnish channel moderated and 'invite-only'.
+  MODE #Finnish +o Kilroy         ; Gives 'chanop' privileges to Kilroy on channel #Finnish.
+  MODE #Finnish +v Wiz            ; Allow WiZ to speak on #Finnish.
+  MODE #Fins -s                   ; Removes 'secret' flag from channel #Fins.
+  MODE #42 +k oulu                ; Set the channel key to "oulu".
+  MODE #eu-opers +l 10            ; Set the limit for the number of users
+                                  on channel to 10.
+  MODE &oulu +b                   ; list ban masks set for channel.
+  MODE &oulu +b *!*@*             ; prevent all users from joining.
+  MODE &oulu +b *!*@*.edu         ; prevent any user from a hostname matching *.edu from joining.
+
+
+
+---*---
+---*---
+
+User modes
+
+// Typically changes either how client is seen by others or what 'extra' messages the client is sent.
+// Only be accepted if the sender of the message and the nickname given as a parameter are the same
+
+MODE <nickname> {[+|-]|i|w|s|o}
+ i - marks a users as invisible;
+ s - marks a user for receipt of server notices;
+ w - user receives wallops;
+ o - operator flag.
+
+  ERR_NEEDMOREPARAMS
+  RPL_CHANNELMODEIS
+  ERR_CHANOPRIVSNEEDED
+  ERR_NOSUCHNICK
+  ERR_NOTONCHANNEL
+  ERR_KEYSET
+  RPL_BANLIST
+  RPL_ENDOFBANLIST
+  ERR_UNKNOWNMODE
+  ERR_NOSUCHCHANNEL
+  ERR_USERSDONTMATCH
+  RPL_UMODEIS
+  ERR_UMODEUNKNOWNFLAG
+
+ex:
+  :MODE WiZ -w                    ; turns reception of WALLOPS messages off for WiZ.
+  :Angel MODE Angel +i            ; Message from Angel to make themselves invisible.
+  MODE WiZ -o                     ; WiZ 'deopping' (removing operator status).
+                                    The plain reverse of this command ("MODE WiZ +o")
+                                    must not be allowed from users since would bypass the OPER command.
+
+// If "+o" one oneself -> ignore command
+// No restriction on anyone `deopping' themselves (using "-o")
+
+
+---*---
+
+TOPIC <channel> [<topic>]
+
+numeric responses:
+  ERR_NEEDMOREPARAMS
+  ERR_NOTONCHANNEL
+  RPL_NOTOPIC
+  RPL_TOPIC
+  ERR_CHANOPRIVSNEEDED
+
+ex:
+  :Wiz TOPIC #test :New topic     ;User Wiz setting the topic.
+  TOPIC #test :another topic      ;set the topic on #test to "another topic".
+  TOPIC #test                     ; check the topic for #test.
+
+// Change or view the topic of a channel.
+// Topic for channel <channel> returned if no <topic> given.
+// If <topic> parameter present, channel topic changed (if channel modes permit this action)
+
+
+---*---
+
+NAMES [<channel>{,<channel>}]
+
+numeric responses:
+  RPL_NAMREPLY
+  RPL_ENDOFNAMES
+
+ex:
+  NAMES #twilight_zone,#42        ; list visible users on #twilight_zone and #42 if the channels are visible to you.
+  NAMES                           ; list all visible channels and users
+
+// List all nicknames visible
+// Visible channel names: not private (+p) or secret (+s) or those which they are actually on.
+// - <channel> parameter: which channel(s) to return information about if valid.
+/* - No <channel> parameter: return list of all channels and their occupants
+   At the end, a list of users who are visible but either not on any channel or not on a visible channel, listed as being on `channel' "*".
+*/ No error reply for bad channel names.
+
+
+---*---
+
+LIST [<channel>{,<channel>} [<server>]]
+
+numeric responses:
+  ERR_NOSUCHSERVER
+  RPL_LISTSTART
+  RPL_LIST
+  RPL_LISTEND
+
+ex:
+  LIST                            ; List all channels.
+  LIST #twilight_zone,#42         ; List channels #twilight_zone and #42
+
+// List channels and their topics
+// <channel> parameter used: only the status of that channel is displayed
+/* Private channels listed (without theirtopics) as channel "Prv" unless
+*/ the client generating the query is actually on that channel.
+// Secret channels are not listed unless the client is a member of the channel
+
+
+---*---
+
+INVITE <nickname> <channel>
+
+numeric responses:
+  ERR_NEEDMOREPARAMS
+  ERR_NOSUCHNICK
+  ERR_NOTONCHANNEL
+  ERR_USERONCHANNEL
+  ERR_CHANOPRIVSNEEDED
+  RPL_INVITING
+  RPL_AWAY
+
+ex:
+  :Angel INVITE Wiz #Dust         ; User Angel inviting WiZ to channel #Dust
+  INVITE Wiz #Twilight_Zone       ; Command to invite WiZ to #Twilight_zone
+
+// Invite users to a channel.  The
+// <nickname>: nickname of the person to be invited to the target channel <channel>
+// The channel the target user is being invited to can be inexistant or an invalid channel
+/* To invite a user to a channel which is invite only (MODE +i), the client sending
+*/ the invite must be recognised as being a channel operator on the given channel
+
+
+---*---
+
+KICK <channel> <user> [<comment>]
+
+numeric responses:
+  ERR_NEEDMOREPARAMS
+  ERR_NOSUCHCHANNEL
+  ERR_BADCHANMASK
+  ERR_CHANOPRIVSNEEDED
+  ERR_NOTONCHANNEL
+
+ex:
+  KICK &Melbourne Matthew              ; Kick Matthew from &Melbourne
+  KICK #Finnish John :Speaking English ; Kick John from #Finnish using "Speaking English" as the reason (comment)
+  :WiZ KICK #Finnish John              ; KICK message from WiZ to remove John from channel #Finnish
+
+// Forcibly remove  a  user  from  a   channel (forced PART)
+// Only channel operator (must be checked by server)
+
+
+
+NOTE:
+Possible to extend parameters to the following:
+  <channel>{,<channel>} <user>{,<user>} [<comment>]
+
+
 ---*---
 
 
-SERVER_SERVER_ONLY_CMDS:
-SERVER, SQUIT
+
+
+=== 4.3 Server queries and commands
+
+Return information about server
+In these queries, where a parameter appears as "<server>", it will
+usually mean it can be a nickname or a server or a wildcard name of
+some sort.  For each parameter, however, only one query and set of
+replies is to be generated.
+
+
+---*---
+
+VERSION [<server>]
+
+numeric responses:
+  ERR_NOSUCHSERVER
+  RPL_VERSION
+
+ex:
+  :Wiz VERSION *.se               ; message from Wiz to check the version of a server matching "*.se"
+  VERSION tolsun.oulu.fi          ; check the version of server "tolsun.oulu.fi".
+
+// Query  the  version  of  the  server program.
+// <server> is used to query the version of the server program which a client is not directly connected to.
+
+
+---*---
+
+STATS [<query> [<server>]]
+
+numeric responses:
+  ERR_NOSUCHSERVER
+  RPL_STATSCLINE
+  RPL_STATSNLINE
+  RPL_STATSILINE
+  RPL_STATSKLINE
+  RPL_STATSQLINE
+  RPL_STATSLLINE
+  RPL_STATSLINKINFO
+  RPL_STATSUPTIME
+  RPL_STATSCOMMANDS
+  RPL_STATSOLINE
+  RPL_STATSHLINE
+  RPL_ENDOFSTATS
+
+ex:
+  STATS m                         ; check the command usage for the server you are connected to
+  :Wiz STATS c eff.org            ; request by WiZ for C/N line information from server eff.org
+
+// A query may be given by any single letter
+/* The following queries are those found in the current IRC
+   implementation and provide a large portion of the setup information
+   for that server.  Although these may not be supported in the same way
+   by other versions, all servers should be able to supply a valid reply
+   to a STATS query which is consistent with the reply formats currently
+   used and the purpose of the query.
+   c - list of servers which the server may connect to or allow connections from;
+   h - list of servers which are either forced to be treated as leaves or allowed to act as hubs;
+   i - list of hosts which the server allows a client to connect from;
+   k - list of banned username/hostname combinations for that server;
+   l - list of the server's connections, showing how long each connection has been established
+       and the traffic over that connection in bytes and messages for each direction;
+   m - list of commands supported by the server and the usage count for each if the usage count is non zero;
+   o - list of hosts from which normal clients may become operators;
+   y - show Y (Class) lines from server's configuration file;
+   u - string showing how long the server has been up.
+*/
+
+
+---*---
+
+LINKS [[<remote server>] <server mask>]
+
+numeric responses:
+  ERR_NOSUCHSERVER
+  RPL_LINKS
+  RPL_ENDOFLINKS
+
+ex:
+  LINKS *.au                      ; list all servers which have a name that matches *.au;
+  :WiZ LINKS *.bu.edu *.edu       ; LINKS message from WiZ to the first server matching *.edu
+                                    for a list of servers matching *.bu.edu.
+
+// List all servers which are known by the server answering the query.
+// Returned list of servers must match the mask (if <server mask> given)
+
+
+---*---
+
+
+TIME [<server>]
+
+numeric responses:
+  ERR_NOSUCHSERVER
+  RPL_TIME
+
+ex:
+  TIME tolsun.oulu.fi             ; check the time on the server "tolson.oulu.fi"
+  Angel TIME *.au                 ; user angel checking the time on a server matching "*.au"
+
+// Query local time from the specified server or the one receieving the query
+
+
+---*---
+
+ADMIN [<server>]
+
+numeric responses:
+  ERR_NOSUCHSERVER
+  RPL_ADMINME
+  RPL_ADMINLOC1
+  RPL_ADMINLOC2
+  RPL_ADMINEMAIL
+
+ex:
+  ADMIN tolsun.oulu.fi            ; request an ADMIN reply from tolsun.oulu.fi
+  :WiZ ADMIN *.edu                ; ADMIN request from WiZ for first server found to match *.edu.
+
+// Find the name of the administrator of the (given) server
+
+
+---*---
+
+INFO [<server>]
+
+numeric responses:
+  ERR_NOSUCHSERVER
+  RPL_INFO
+  RPL_ENDOFINFO
+
+ex:
+  INFO csd.bu.edu                 ; request an INFO reply from csd.bu.edu
+  :Avalon INFO *.fi               ; INFO request from Avalon for first server found to match *.fi.
+  INFO Angel                      ; request info from the server that Angel is connected to.
+
+/* Return information which describes the server:
+    - version
+    - when it was compiled
+    - patchlevel
+    - when it was started
+    - any other miscellaneous information which may be considered to be relevant
+*/
+
+
+
+
+=== 4.4 Sending messages
+
+PRIVMSG and NOTICE are the only messages available which actually perform delivery of a text message
+from one client to another - the rest just make it possible and try to ensure it happens in a reliable and structured manner.
+
+
+---*---
+
+PRIVMSG <receiver>{,<receiver>} <text to be sent>
+
+numeric responses:
+  ERR_NORECIPIENT
+  ERR_NOTEXTTOSEND
+  ERR_CANNOTSENDTOCHAN
+  ERR_NOTOPLEVEL
+  ERR_WILDTOPLEVEL
+  ERR_TOOMANYTARGETS
+  ERR_NOSUCHNICK
+  RPL_AWAY
+
+ex:
+  :Angel PRIVMSG Wiz :Hello are you receiving this message ?          ; Message from Angel to Wiz.
+  PRIVMSG Angel :yes I'm receiving it !receiving it !'u>(768u+1n) .br ; Message to Angel.
+  PRIVMSG jto@tolsun.oulu.fi :Hello !                                 ; Message to a client on server tolsun.oulu.fi with username of "jto".
+  PRIVMSG $*.fi :Server tolsun.oulu.fi rebooting.
+                                  ; Message to everyone on a server which
+                                    has a name matching *.fi.
+  PRIVMSG #*.edu :NSFNet is undergoing work, expect interruptions
+                                  ; Message to all users who come from a
+                                    host which has a name matching *.edu.
+
+// Send private messages between users.
+/* <receiver> :
+   - nickname of receiveror
+   - list of names or channels separated with commas
+   - host mask  (#mask)  or  server mask  ($mask). The mask  must
+     have at  least  one  "."  in it and no wildcards following the
+     last ".".  This requirement exists to prevent people sending messages
+     to  "#*"  or "$*",  which  would  broadcast  to  all  users; from
+     experience, this is abused more than used responsibly and properly.
+     Wildcards are  the  '*' and  '?'   characters.   This  extension  to
+     the PRIVMSG command is only available to Operators.
+*/
+
+
+---*---
+
+NOTICE <nickname> <text>
+
+// Used similarly to PRIVMSG.
+// Difference between NOTICE and PRIVMSG: automatic replies must never be sent in response to a NOTICE message.
+// Applies to servers too - they must not send any error reply back to the client on receipt of a notice.
+// The object of this rule is to avoid loops between a client automatically sending something in response to
+// something it received.
+
+
+---*---
+
+
+
+
+=== 4.5 User based queries
+
+Finding details on a particular user or group users.
+When using wildcards with any of these commands, if they match, only
+return information on users who are 'visible' to the user.
+The visibility of a user is determined as a combination of the user's mode and the
+common set of channels users are both on.
+
+---*---
+
+WHO [<name> [<o>]]
+
+numeric responses:
+  ERR_NOSUCHSERVER
+  RPL_WHOREPLY
+  RPL_ENDOFWHO
+
+ex:
+  WHO *.fi                        ; List all users who match against "*.fi".
+  WHO jto* o                      ; List all users with a match against "jto*" if they are an operator.
+
+/* Returns a list of information which 'matches' the <name> parameter
+   In the absence of the <name> parameter, all visible
+   (users who aren't invisible (user mode +i) and who don't have a
+   common channel with the requesting client) are listed.
+   The same result can be achieved by using a <name> of "0" or any wildcard which
+   will end up matching every entry possible.
+/* The <name> passed to WHO is matched against users' host, server, real
+   name and nickname if the channel <name> cannot be found.
+/* If the "o" parameter is passed only operators are returned according
+   to the name mask supplied.
+
+
+---*---
+
+WHOIS [<server>] <nickmask>[,<nickmask>[,...]]
+
+numeric responses:
+  ERR_NOSUCHSERVER
+  ERR_NONICKNAMEGIVEN
+  RPL_WHOISUSER
+  RPL_WHOISCHANNELS
+  RPL_WHOISCHANNELS
+  RPL_WHOISSERVER
+  RPL_AWAY
+  RPL_WHOISOPERATOR
+  RPL_WHOISIDLE
+  ERR_NOSUCHNICK
+  RPL_ENDOFWHOIS
+
+ex:
+  WHOIS wiz                       ; return available user information about nick WiZ
+  WHOIS eff.org trillian          ; ask server eff.org for user information about trillian
+
+// Query information about particular user.
+// Answer with several numeric messages about statuses of each user matching the nickmask (if visible).
+// If no wildcard is present in the <nickmask>, any information about that nick allowed to see is presented.
+// A comma (',') separated list of nicknames may be given.
+// The latter version sends the query to a specific server
+
+
+---*---
+
+WHOWAS <nickname> [<count> [<server>]]
+
+numeric responses:
+  ERR_NONICKNAMEGIVEN
+  ERR_WASNOSUCHNICK
+  RPL_WHOWASUSER
+  RPL_WHOISSERVER
+  RPL_ENDOFWHOWAS
+
+ex:
+  WHOWAS Wiz                      ; return all information in the nick history about nick "WiZ";
+  WHOWAS Mermaid 9                ; return at most, the 9 most recent entries in the nick history for "Mermaid";
+  WHOWAS Trillian 1 *.edu         ; return the most recent history for "Trillian" from the first server found to match "*.edu".
+
+// Asks for information about a nickname which no longer exists.
+// Either be due to a nickname change or the user leaving IRC.
+// In response to this query, the server searches through its nickname
+// history. No wild card here.
+// The history is searched backward, returning most recent entry first.
+// If there are multiple entries, up to <count> replies will be returned (or all of them if no <count>
+// parameter is given).
+// If a non-positive number is passed as being <count>, then a full search is done.
+
+---*---
+
+
+
+=== 4.6 Miscellaneous messages
+
+---*---
+
+
+---------------------------
+
+* SERVER-SERVER ONLY CMDS *
+SERVER, SQUIT, CONNECT, TRACE,

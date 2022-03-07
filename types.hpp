@@ -1,6 +1,9 @@
 #pragma once
 
-enum commands {
+#include <cstddef>
+#include <string>
+
+enum Command {
   KICK, // channel operator
   MODE, // channel operator
   INVITE, // channel operator (in +i mode)
@@ -11,6 +14,7 @@ enum commands {
   WHOIS,
 };
 
-enum modes {
+
+enum ChannelMode {
   INVITE_ONLY, // +i
 };
