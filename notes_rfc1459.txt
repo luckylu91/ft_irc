@@ -39,7 +39,10 @@ prefix starts with ':'
 command : IRC command | 3-digit number string
 lines end with '\r\n'
 max 512 chars
-
+If prefix missing from the message, assumed to have originated from the connection from which it was
+received from.
+Clients SHOULD NOT use a prefix when sending a message;
+if they use one, the only valid prefix is the registered nickname associated with the client.
 
 
 === 2.4 Numeric replies

@@ -1,13 +1,15 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "Client.hpp"
+#include "utils.hpp"
+
+struct Client;
 
 struct Channel {
-  Channel(std::string name, Client const * & oper):
+  Channel(std::string name, Client * oper):
     name(name),
-    oper(oper),
-    clients(1, oper),
+    oper(NULL),
+    clients(),
     isPrivate(false),
     isSecret(false),
     isInviteOnly(false),
@@ -17,9 +19,19 @@ struct Channel {
     limit(-1),
     // banmask
     password()
-  {}
+  {
+    add_client_to_channel(*oper, *this);
+  }
 
-  std::string name;  // max len: 200; begins with '&'|'#'; no space, ^G or ','
+  friend bool operator==(Channel const & a, Channel const & b) {
+    return a.name == b.name;
+  }
+
+  size_t size() { return clients.size(); }
+
+  void remove_client(Client const & client);
+
+  std::string name;    // max len: 200; begins with '&'|'#'; no space, ^G or ','
   Client const * oper; // channel operator, has leading '@'
   std::vector<Client const *> clients;
   bool isPrivate;
@@ -28,7 +40,7 @@ struct Channel {
   bool isTopicSettable;
   bool isUnqueriableByOutsideClient;
   bool isModerated;
-  int limit = -1;
+  int limit;
   // banmask
   std::string password;
 };
