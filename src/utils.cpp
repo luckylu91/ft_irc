@@ -1,6 +1,9 @@
 #include <sstream>
 #include <cstdint>
-#include <iomanip>      // std::setfill, std::setw
+// #include <iomanip>      // std::setfill, std::setw
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include "utils.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
@@ -41,15 +44,8 @@ void add_client_to_channel(Client * client, Channel * channel) {
 
 std::string addr_string(struct sockaddr_in addr) {
   std::stringstream ss;
-  // ss << std::setfill('0') << std::setw(3);
-  uint32_t ip_addr = static_cast<uint32_t>(addr.sin_addr);
-  uint16_t ip_port = static_cast<uint16_t>(addr.sin_port);
-
-  ss << (0xff000000 & ip_addr) << ".";
-  ss << (0x00ff0000 & ip_addr) << ".";
-  ss << (0x0000ff00 & ip_addr) << ".";
-  ss << (0x000000ff & ip_addr) << ":";
-  ss << ip_port;
+  ss << inet_ntoa(addr.sin_addr);
+  return ss.str();
 }
 
 std::string client_name(std::string const & nick, std::string const & user_name, struct sockaddr_in addr) {
@@ -58,4 +54,9 @@ std::string client_name(std::string const & nick, std::string const & user_name,
   ss << "!" << user_name;
   ss << "@" << addr_string(addr);
   return ss.str();
+}
+
+bool address_equal(struct sockaddr_in addr1, struct sockaddr_in addr2) {
+  return strcmp(inet_ntoa(addr1.sin_addr), inet_ntoa(addr1.sin_addr)) == 0
+    && addr1.sin_port == addr2.sin_port;
 }

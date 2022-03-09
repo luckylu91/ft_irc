@@ -14,4 +14,4 @@ bool channel_name_in_list(std::string const & name, std::vector<Channel> const &
 void add_client_to_channel(Client const * client, Channel const * channel);
 std::string addr_string(struct socketaddr_in addr);
 std::string client_name(std::string const & nick, std::string const & user_name, struct socketaddr_in addr);
-
+bool address_equal(struct socketaddr_in addr1, struct socketaddr_in addr2);

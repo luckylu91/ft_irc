@@ -5,8 +5,7 @@
 #include "Server.hpp"
 #include "numeric_codes.hpp"
 
-class NetworkClient {
-public:
+struct NetworkClient {
   NetworkClient(Server & server, struct sockaddr_in addr):
     server(server),
     addr(addr),
@@ -14,9 +13,9 @@ public:
     nick_is_set(false),
     user_data_is_set(false) {}
 
-  ~NetworkClient() {
-    this->server.remove_network_client();
-  }
+  // ~NetworkClient() {
+  //   this->server.remove_network_client();
+  // }
 
   void set_password(std::string const & password) {
     if (this->is_registered()) {
@@ -82,8 +81,6 @@ public:
     return client;
   }
 
-
-private:
   Server & server;
   struct sockaddr_in addr;
   bool has_provided_password;

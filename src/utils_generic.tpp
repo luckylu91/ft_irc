@@ -56,12 +56,17 @@ bool is_in(A const & a, AVector const & vec) {
   return std::find(vec.begin(), vec.end(), a) != vec.end();
 }
 
-template <class A, class Vector, class Compare>
-typename Vector::iterator find_in_pointer_vector(A const & a, Vector & pointer_vec) {
-  Compare compare_to_a(a);
+template <class Compare, class A, class Vector>
+typename Vector::iterator find_in_vector(A const & a, Vector & pointer_vec) {
+  IsSame<A, typename Vector::value_type, Compare> compare_to_a(a);
   return std::find_if(
     pointer_vec.begin(),
     pointer_vec.end(),
     compare_to_a
   );
+}
+
+template <class Compare, class A, class Vector>
+bool found_in(A const & a, Vector const & vec) {
+  return find_in_vector<Compare, A, Vector>(a, vec) != vec.end();
 }
