@@ -1,6 +1,10 @@
+#include <sstream>
+#include <cstdint>
+#include <iomanip>      // std::setfill, std::setw
 #include "utils.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
+
 
 struct ChannelNameEqChannel {
   bool operator()(std::string const & name, Channel const & channel) {
@@ -27,9 +31,31 @@ bool channel_name_in_list(std::string const & name, std::vector<Channel> const &
   return find_channel_by_name(name, channels) != channels.end();
 }
 
-void add_client_to_channel(Client & client, Channel & channel) {
-  if (!is_in_pointer_vector(client, channel.clients)) {
-    channel.clients.push_back(&client);
-    client.channels.push_back(&channel);
+
+void add_client_to_channel(Client * client, Channel * channel) {
+  if (!is_in(client, channel->clients)) {
+    channel->clients.push_back(client);
+    client->channels.push_back(channel);
   }
+}
+
+std::string addr_string(struct sockaddr_in addr) {
+  std::stringstream ss;
+  // ss << std::setfill('0') << std::setw(3);
+  uint32_t ip_addr = static_cast<uint32_t>(addr.sin_addr);
+  uint16_t ip_port = static_cast<uint16_t>(addr.sin_port);
+
+  ss << (0xff000000 & ip_addr) << ".";
+  ss << (0x00ff0000 & ip_addr) << ".";
+  ss << (0x0000ff00 & ip_addr) << ".";
+  ss << (0x000000ff & ip_addr) << ":";
+  ss << ip_port;
+}
+
+std::string client_name(std::string const & nick, std::string const & user_name, struct sockaddr_in addr) {
+  std::stringstream ss;
+  ss << nick;
+  ss << "!" << user_name;
+  ss << "@" << addr_string(addr);
+  return ss.str();
 }

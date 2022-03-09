@@ -50,3 +50,8 @@ template <class A>
 bool is_in_pointer_vector(A const & a, std::vector<A const *> const & pointer_vec) {
   return find_in_pointer_vector(a, pointer_vec) != pointer_vec.end();
 }
+
+template <class A, class AVector>
+bool is_in(A const & a, AVector const & vec) {
+  return std::find(vec.begin(), vec.end(), a) != vec.end();
+}
