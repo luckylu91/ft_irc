@@ -13,6 +13,13 @@
 struct Server {
   Server(std::string password): password(password), channels(), clients() {}
 
+  NetworkClient * new_unregistered_client(struct sockaddr_in addr) {
+    if (this->address_exists(addr)) {
+      throw ClientExistsError();
+    }
+    NetworkClient * client = new NetworkClient(*this, addr);
+    this->unregistered_clients.push_back(client);
+  }
   Client * new_client(std::string nick, std::string real_name, std::string username);
   void new_channel(std::string name, Client * oper);
   Client * get_client_by_name(std::string const & nick) const;
@@ -49,10 +56,8 @@ struct Server {
 
   std::string password;
   std::vector<Channel *> channels;
+  std::vector<NetworkClient *> unregistered_clients;
   std::vector<Client *> clients;
-  std::map<std::string, Client *> clients_id_table;
-  std::map<struct sockaddr, NetworkClient *> clients_addr_table;
-  std::map<std::string, Channel *> channel_id_table;
 
   std::string password;
 };
