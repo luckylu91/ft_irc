@@ -21,11 +21,26 @@ void Message::add_param(std::string const & param) {
   this->param.push_back(param);
 }
 
-Message Message::parse_one(char *base)
+void Message::parse(char *base, std::vector<Message> vec)
+{
+	std::string temp = base;
+	int start =0;
+	int end;
+	while ((end = temp.find("\r\n",start))!=std::string::npos)
+	{
+		vec.push_back(parse_one(temp.substr(start,end)));
+		start = end+2;
+	}
+	
+
+}
+
+
+Message Message::parse_one(std::string s)
 {
   Message message;
-
-	char *temp =  strtok(base," ");
+	char * base = &s[0];
+  char *temp =  strtok(base," ");
 	if (temp[0] == ':')
 	{
 		message.set_source(temp);

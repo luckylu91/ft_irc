@@ -16,7 +16,9 @@ public:
   std::vector<std::string> const & get_param() const { return this->param; }
   void add_param(std::string const & param);
 
-  static Message parse_one(char *base);
+  static void parse(char *base, std::vector<Message> vec);
+
+  static Message parse_one(std::string s);
 
   std::string to_string() const;
 	friend std::ostream& operator<<(std::ostream & out, Message const & m);

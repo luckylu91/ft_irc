@@ -27,12 +27,13 @@ int main(int argc, char *argv[])
 	struct	kevent tevents[20];
 
 	struct	kevent tevent;
+	std::vector<Message> vec;
 	int sockfd, newsockfd, portno, clilen, n, kq, ret;
 
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 
-  Server server("LE_SERVER", "0.1", "root");
+	Server server("LE_SERVER", "0.1", "root");
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	printf("sockfd = %i\n",sockfd);
@@ -74,7 +75,7 @@ int main(int argc, char *argv[])
 
 				printf("New connection\n");
 				newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *)&clilen);
-        server.new_client(newsockfd, cli_addr);
+				server.new_client(newsockfd, cli_addr);
 				EV_SET(&event, newsockfd, EVFILT_READ, EV_ADD  , 0, 0, 0);
 
 				ret = kevent(kq, &event, 1, NULL,	0, NULL);
@@ -95,8 +96,13 @@ int main(int argc, char *argv[])
 				// printf("troisieme if 3 \n");
 				printf("Here is the message: %s\n",buffer);
 				// Message m = Message::parse(buffer);
-        int cli_sockfd = static_cast<int>(tevent.ident);
-        server.receive_message(cli_sockfd, Message::parse(buffer));
+				int cli_sockfd = static_cast<int>(tevent.ident);
+				Message::parse(buffer,vec);
+				for (std::vector<Message>::iterator it = vec.begin(); it != vec.end(); it++)
+				{
+					std::cout<<"message : "<<it->to_string()<<std::endl;
+					server.receive_message(cli_sockfd, *it);
+				}
 				// std::cout<<m;
 				// n = write(tevent.ident,"I got your message",18);
 				// if (n < 0)
