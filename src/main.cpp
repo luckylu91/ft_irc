@@ -23,6 +23,8 @@ void error(const char *msg)
 int main(int argc, char *argv[])
 {
 	struct	kevent event;	 /* Event we want to monitor */
+	struct	kevent tevents[20];
+
 	struct	kevent tevent;
 	int sockfd, newsockfd, portno, clilen, n, kq, ret;
 
@@ -44,41 +46,56 @@ int main(int argc, char *argv[])
 	kq = kqueue();
 	EV_SET(&event, sockfd, EVFILT_READ, EV_ADD | EV_ENABLE  , 0, 0, 0);
 
-	printf("before ident = %i \n",tevent.ident);
+	printf("before ident = %lu  \n",tevent.ident);
+
 	ret = kevent(kq,&event, 1, NULL,0,NULL);
 	while (1)
 	{
-		 Message m;
-		// newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *)&clilen);
-		//
-		//
+		Message m;
 		printf("port = %i \n",cli_addr.sin_port);
-		ret = kevent(kq, &event, 1, &tevent,	1, NULL);
-		printf("ident = %i \n",tevent.ident);
-		if (tevent.flags & EV_EOF)
-            {
-                printf("Client has disconnected");
-                close(tevent.ident);
-            }
-		if (tevent.ident == sockfd)
+		ret = kevent(kq, 0, 0, tevents,	20, NULL);
+		printf("ident = %lu \n",tevent.ident);
+		for(int i = 0 ; i<ret; i++)
 		{
-			newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *)&clilen);
-			EV_SET(&event, newsockfd, EVFILT_READ, EV_ADD | EV_ENABLE  , 0, 0, 0);
-		}
-		else
-		{
-			bzero(buffer,256);
-			// n = read(tevent.ident,buffer,255);
-			n = recv(newsockfd,buffer,255,0);
-			if (n < 0)
-				error("ERROR reading from socket");
+			tevent = tevents[i];
+			if (tevent.flags & EV_EOF)
+			{
 
-			printf("Here is the message: %s\n",buffer);
-			m.parse(buffer);
-			std::cout<<m;
-			n = write(newsockfd,"I got your message",18);
-			if (n < 0)
-				error("ERROR writing to socket");
+				// printf("premier if flags = %hu ident = %lu\n",tevent.flags,tevent.ident);
+				printf("Client has disconnected\n");
+				close(tevent.ident);
+
+			}
+			else if (tevent.ident == sockfd)
+			{
+
+				printf("New connection\n");
+				newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *)&clilen);
+				EV_SET(&event, newsockfd, EVFILT_READ, EV_ADD  , 0, 0, 0);
+
+				ret = kevent(kq, &event, 1, NULL,	0, NULL);
+			}
+			else
+			{
+
+				// printf("troisieme if ident = %lu \n",tevent.ident);
+				bzero(buffer,256);
+
+				// printf("troisieme if 1 \n");
+				n = recv(tevent.ident,buffer,255,0);
+
+				// printf("troisieme if 2 \n");
+				if (n < 0)
+					error("ERROR reading from socket");
+
+				// printf("troisieme if 3 \n");
+				printf("Here is the message: %s\n",buffer);
+				m.parse(buffer);
+				// std::cout<<m;
+				n = write(tevent.ident,"I got your message",18);
+				if (n < 0)
+					error("ERROR writing to socket");
+			}
 		}
 	}
 	return 0;

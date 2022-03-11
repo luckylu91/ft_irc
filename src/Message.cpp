@@ -8,7 +8,7 @@
 typedef std::vector<std::string>::const_iterator string_iterator;
 
 Message::Message() {}
-
+using namespace std;
 Message::Message(std::string source,	std::string command, std::vector<std::string> param):
   source(source),
   command(command),
@@ -42,7 +42,7 @@ Message Message::parse(char *base)
 				(message.param.back()).append(temp);
 				temp =  strtok(NULL," ");
 			}
-			return;
+			return message;
 		}
 		message.param.push_back(temp);
 		temp =  strtok(NULL," ");
@@ -50,9 +50,9 @@ Message Message::parse(char *base)
   return message;
 }
 
-static param_has_spaces(std::string const & str) {
-  str.find(' ')
-}
+// static param_has_spaces(std::string const & str) {
+  // str.find(' ');
+// }
 
 std::string Message::to_string() const {
   std::stringstream ss;
@@ -64,16 +64,17 @@ std::string Message::to_string() const {
   for (string_iterator it = this->param.begin(); it != this->param.end(); ++it) {
     ss << " " << *it;
   }
+  return ss.str();
 }
 
-// ostream& operator<<( ostream& out, Message m)
-// {
-// 	out <<"source ="<<m.source << endl
-// 		<<"command ="<<m.command<< endl;
-// 	out <<"param =";
-// 	for ( vector< string>::iterator it = m.param.begin() ; it != m.param.end() ; it++)
-// 		out << *it<<" ";
-// 	out << endl;
-// 	return out;
-// }
+ostream& operator<<( ostream& out, Message m)
+{
+	out <<"source ="<<m.source << endl
+		<<"command ="<<m.command<< endl;
+	out <<"param =";
+	for ( vector< string>::iterator it = m.param.begin() ; it != m.param.end() ; it++)
+		out << *it<<" ";
+	out << endl;
+	return out;
+}
 
