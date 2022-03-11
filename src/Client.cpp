@@ -34,6 +34,7 @@ Client::Client(int sockfd, struct sockaddr_in addr, Server & server):
   real_name("no_real_name") {}
 
 void Client::set_password(std::string const & password) {
+  std::cout << "SET_PASSWORD" << std::endl;
   if (this->is_registered()) {
     // ERR_ALREADYREGISTRED (462)
   }
@@ -47,13 +48,14 @@ void Client::set_password(std::string const & password) {
 }
 
 void Client::set_user(std::string const & user_name, std::string const & real_name) {
-  std::cout << "DEBUGSGHACCSB" << std::endl;
+  std::cout << "SET_USER" << std::endl;
   if (this->is_registered()) {
     // ERR_ALREADYREGISTERED (462)
   }
   this->user_name = user_name;
   this->real_name = real_name;
   if (!this->is_user && this->is_identified && this->is_nick) {
+    std::cout << "REGISTERED" << std::endl;
     this->server.welcome(this);
   }
   this->is_user = true;
@@ -62,6 +64,7 @@ void Client::set_user(std::string const & user_name, std::string const & real_na
 // (before)
 // ERR_NONICKNAMEGIVEN (431)
 void Client::set_nick(std::string const & nick) {
+  std::cout << "SET_NICK" << std::endl;
   if (invalid_nick(nick)) {
     // ERR_ERRONEUSNICKNAME (432)
   }
