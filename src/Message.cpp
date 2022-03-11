@@ -21,7 +21,7 @@ void Message::add_param(std::string const & param) {
   this->param.push_back(param);
 }
 
-Message Message::parse(char *base)
+Message Message::parse_one(char *base)
 {
   Message message;
 
@@ -49,7 +49,7 @@ Message Message::parse(char *base)
 				(message.param.back()).append(temp);
 				temp =  strtok(NULL," ");
 			}
-			return;
+			return message;
 		}
 		message.param.push_back(temp);
 		temp =  strtok(NULL," ");

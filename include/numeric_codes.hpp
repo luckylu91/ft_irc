@@ -14,6 +14,8 @@
 // "<command> :Not enough parameters"
 #define ERR_ALREADYREGISTRED "462"
 //  ":Unauthorized command (already registered)"
+#define ERR_PASSWDMISMATCH "464"
+// "<client> :Password incorrect"
 #define ERR_NONICKNAMEGIVEN "431"
 // ":No nickname given"
 #define ERR_ERRONEUSNICKNAME "432"

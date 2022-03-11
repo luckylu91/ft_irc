@@ -1,5 +1,29 @@
+#include "utils.hpp"
 #include "Client.hpp"
 #include <sstream>
+#include <iostream>
+
+
+// special = "[", "]", "\", "`", "_", "^", "{", "|", "}"
+// letter = A-Z / a-z
+// nickname = ( letter / special ) *8( letter / digit / special / "-" )
+
+static bool is_special_char(char c) {
+  return c == '[' || c ==  ']' || c ==  '\\' || c ==  '`' || c ==  '_'
+    || c ==  '^' || c ==  '{' || c ==  '|' || c ==  '}';
+}
+
+static bool invalid_nick(std::string const & nick) {
+  if (nick.size() == 0 || nick.size() > 9)
+    return true;
+  if (!std::isalpha(nick[0]) && !is_special_char(nick[0]))
+    return true;
+  for (size_t i = 0; i < nick.length(); i++) {
+    if (!std::isalnum(nick[0]) && !is_special_char(nick[0]) && nick[i] != '-')
+      return true;
+  }
+  return false;
+}
 
 Client::Client(int sockfd, struct sockaddr_in addr, Server & server):
   sockfd(sockfd),
@@ -13,7 +37,7 @@ void Client::set_password(std::string const & password) {
   if (this->is_registered()) {
     // ERR_ALREADYREGISTRED (462)
   }
-  if (this->server.try_password(password)) {
+  if (this->server.try_password(this, password)) {
     this->is_identified = true;
   }
   else {
@@ -23,6 +47,7 @@ void Client::set_password(std::string const & password) {
 }
 
 void Client::set_user(std::string const & user_name, std::string const & real_name) {
+  std::cout << "DEBUGSGHACCSB" << std::endl;
   if (this->is_registered()) {
     // ERR_ALREADYREGISTERED (462)
   }
@@ -45,6 +70,7 @@ void Client::set_nick(std::string const & nick) {
   }
   this->nick = nick;
   if (!this->is_nick && this->is_identified && this->is_user) {
+    std::cout << "REGISTERED" << std::endl;
     this->server.welcome(this);
   }
   this->is_nick = true;
@@ -59,28 +85,6 @@ std::string Client::name() const {
 
   ss << this->nick;
   ss << "!" << this->user_name;
-  ss << "@" << addr_string(this->sockfd);
+  ss << "@" << addr_string(this->addr);
   return ss.str();
-}
-
-
-// special = "[", "]", "\", "`", "_", "^", "{", "|", "}"
-// letter = A-Z / a-z
-// nickname = ( letter / special ) *8( letter / digit / special / "-" )
-
-static bool is_special_char(char c) {
-  return c == '[' || c ==  ']' || c ==  '\\' || c ==  '`' || c ==  '_'
-    || c ==  '^' || c ==  '{' || c ==  '|' || c ==  '}';
-}
-
-static bool invalid_nick(std::string const & nick) {
-  if (nick.size() == 0 || nick.size() > 9)
-    return true;
-  if (!std::isalpha(nick[0]) && !is_special_char(nick[0]))
-    return true;
-  for (size_t i = 0; i < nick.length(); i++) {
-    if (!std::isalnum(nick[0]) && !is_special_char(nick[0]) && nick[i] != '-')
-      return true;
-  }
-  return false;
 }

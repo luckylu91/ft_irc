@@ -7,14 +7,19 @@
 #include <unistd.h>
 #include <ctime>
 
-typedef std::vector<Client *>::iterator client_iterator;
+typedef std::vector<Client *>::const_iterator client_iterator;
 
 Server::Server(std::string const & name, std::string const & version, std::string const & password):
   name(name),
   version(version),
   password(password),
+  clients(),
   creation_time(time(0)) {}
 
+
+Client * Server::find_client_by_sockfd(int sockfd) {
+  return *find_in_vector<SameSockfd>(sockfd, this->clients);
+}
 
 // Client * find_client_by_addr(struct sockaddr_in addr) {
 
@@ -24,12 +29,15 @@ Server::Server(std::string const & name, std::string const & version, std::strin
 
 // }
 
-void new_client(int sockfd, struct sockaddr_in addr) {
+void Server::new_client(int sockfd, struct sockaddr_in addr) {
   Client * client = new Client(sockfd, addr, *this);
   this->clients.push_back(client);
 }
 
-bool Server::try_password(std::string const & password) const {
+bool Server::try_password(Client const * client, std::string const & password) const {
+  if (password != this->password) {
+    this->err_passwdmismatch(client);
+  }
   return password == this->password;
 }
 
@@ -40,8 +48,33 @@ void Server::send_message(Client const * client, Message const & message) const 
 		throw ClientSocketWriteException(client);
 }
 
+void Server::receive_message(int sockfd, Message const & message) {
+  Client * client = this->find_client_by_sockfd(sockfd);
+  if (message.get_command() == "NICK") {
+    if (message.get_param().size() == 0) {
+      this->err_nonicknamegiven(client);
+    }
+    client->set_nick(message.get_param()[0]);
+  }
+  else if (message.get_command() == "USER") {
+    if (message.get_param().size() < 4) {
+      this->err_needmoreparams(client, "USER");
+    }
+    client->set_user(message.get_param()[0], message.get_param()[3]);
+  }
+  else if (message.get_command() == "PASS") {
+    if (message.get_param().size() == 0) {
+      this->err_needmoreparams(client, "PASS");
+    }
+    client->set_password(message.get_param()[0]);
+  }
+}
+
 void Server::welcome(Client const * client) const {
-  this->send
+  this->rpl_welcome(client);
+  this->rpl_yourhost(client);
+  this->rpl_created(client);
+  this->rpl_myinfo(client);
 }
 
 bool Server::nick_exists(std::string const & nick) const {
@@ -50,7 +83,7 @@ bool Server::nick_exists(std::string const & nick) const {
 }
 
 
-Message Server::base_message(std::string const & command) {
+Message Server::base_message(std::string const & command) const {
     Message message;
 
   message.set_source(this->name);
@@ -58,58 +91,74 @@ Message Server::base_message(std::string const & command) {
   return message;
 }
 
-Message rpl_welcome(Client * client) {
+void Server::rpl_welcome(Client const * client) const {
   Message m = this->base_message(RPL_WELCOME);
 
   m.add_param("Welcome to the Internet Relay Network" + client->name());
-  return m;
+  this->send_message(client, m);
 }
-Message rpl_yourhost() {
+void Server::rpl_yourhost(Client const * client) const {
   Message m = this->base_message(RPL_YOURHOST);
   m.add_param("Your host is" + this->name + "running version" + this->version);
-  return m;
+  this->send_message(client, m);
 }
-Message rpl_created() {
+void Server::rpl_created(Client const * client) const {
   Message m = this->base_message(RPL_CREATED);
-  m.add_param("This server was created" + std:string(ctime(&this->cration_time)));
+  m.add_param("This server was created" + std::string(ctime(&this->creation_time)));
   m.add_param("Not enough parameters");
-  return m;
+  this->send_message(client, m);
 }
-Message rpl_myinfo() {
+void Server::rpl_myinfo(Client const * client) const {
   Message m = this->base_message(RPL_MYINFO);
   m.add_param(this->name + " " + this->version); // + "<available user modes> <available channel modes>");
-  return m;
+  this->send_message(client, m);
 }
 
-Message Server::err_needmoreparams(std::string const & command) {
+void Server::err_needmoreparams(Client const * client, std::string const & command) const {
   Message m = this->base_message(ERR_NEEDMOREPARAMS);
   m.add_param(command);
   m.add_param("Not enough parameters");
-  return m;
+  this->send_message(client, m);
 }
-Message Server::err_alreadyregistred() {
+void Server::err_alreadyregistred(Client const * client) const {
   Message m = this->base_message(ERR_ALREADYREGISTRED);
   m.add_param("Unauthorized command (already registered)");
-  return m;
+  this->send_message(client, m);
 }
-Message Server::err_nonicknamegiven() {
+void Server::err_nonicknamegiven(Client const * client) const {
   Message m = this->base_message(ERR_NONICKNAMEGIVEN);
   m.add_param("No nickname given");
-  return m;
+  this->send_message(client, m);
 }
-Message Server::err_erroneusnickname(std::string const & nick) {
+void Server::err_erroneusnickname(Client const * client, std::string const & nick) const {
   Message m = this->base_message(ERR_ERRONEUSNICKNAME);
   m.add_param(nick);
   m.add_param("Erroneous nickname");
-  return m;
+  this->send_message(client, m);
 }
-Message Server::err_nicknameinuse(std::string const & nick) {
+void Server::err_nicknameinuse(Client const * client, std::string const & nick) const {
   Message m = this->base_message(ERR_NICKNAMEINUSE);
   m.add_param("Nickname is already in use");
-  return m;
+  this->send_message(client, m);
 }
-Message Server::err_restricted() {
+void Server::err_restricted(Client const * client) const {
   Message m = this->base_message(ERR_RESTRICTED);
   m.add_param("Your connection is restricted!");
-  return m;
+  this->send_message(client, m);
 }
+void Server::err_passwdmismatch(Client const * client) const {
+  Message m = this->base_message(ERR_PASSWDMISMATCH);
+  m.add_param(client->name());
+  m.add_param("Password incorrect");
+  this->send_message(client, m);
+}
+
+
+bool SameNick::operator()(std::string const & nick, Client const * client) {
+  return nick == client->get_nick();
+}
+
+bool SameSockfd::operator()(int sockfd, Client const * client) {
+  return sockfd == client->get_sockfd();
+}
+
