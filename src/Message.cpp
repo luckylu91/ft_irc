@@ -7,12 +7,19 @@
 
 typedef std::vector<std::string>::const_iterator string_iterator;
 
-Message::Message() {}
+Message::Message(): source_is_set(false) {}
 
-Message::Message(std::string source,	std::string command, std::vector<std::string> param):
-  source(source),
-  command(command),
-  param(param) {}
+
+void Message::set_source(std::string const & source) {
+  this->source = source;
+  this->source_is_set = true;
+}
+void Message::set_command(std::string const & command) {
+  this->command = command;
+}
+void Message::add_param(std::string const & param) {
+  this->param.push_back(param);
+}
 
 Message Message::parse(char *base)
 {
@@ -21,14 +28,14 @@ Message Message::parse(char *base)
 	char *temp =  strtok(base," ");
 	if (temp[0] == ':')
 	{
-		message.source = temp;
+		message.set_source(temp);
 		temp =  strtok(NULL, " ");
 		if (temp != NULL)
-			message.command = base;
+			message.set_command(base);
 	}
 	else
 	{
-		message.command = base;
+		message.set_command(base);
 	}
 	temp =  strtok(NULL," ");
 	while(temp != NULL)
@@ -50,20 +57,31 @@ Message Message::parse(char *base)
   return message;
 }
 
-static param_has_spaces(std::string const & str) {
-  str.find(' ')
+static bool param_has_spaces(std::string const & str) {
+  return str.find(' ') != std::string::npos;
+}
+
+static void insert_params(std::stringstream & ss, std::vector<std::string> const & param) {
+  if (param.size() == 0)
+    return;
+  string_iterator it_last = --param.end();
+  for (string_iterator it = param.begin(); it != it_last; ++it) {
+    ss << " " << *it;
+  }
+  ss << " ";
+  if (param_has_spaces(*it_last))
+    ss << ":";
+  ss << *it_last;
 }
 
 std::string Message::to_string() const {
   std::stringstream ss;
 
-
-  if (this->source_is_present)
+  if (this->source_is_set)
     ss << ":" << this->source << " ";
   ss << this->command;
-  for (string_iterator it = this->param.begin(); it != this->param.end(); ++it) {
-    ss << " " << *it;
-  }
+  insert_params(ss, this->param);
+  return ss.str();
 }
 
 // ostream& operator<<( ostream& out, Message m)

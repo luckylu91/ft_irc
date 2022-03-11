@@ -16,6 +16,8 @@ public:
   void set_nick(std::string const & nick);
   bool is_registered() const;
   std::string name() const;
+  int get_sockfd() const { return this->sockfd; }
+  std::string get_nick() const { return this->nick; }
 
 private:
   int sockfd;

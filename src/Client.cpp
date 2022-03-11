@@ -1,4 +1,5 @@
 #include "Client.hpp"
+#include <sstream>
 
 Client::Client(int sockfd, struct sockaddr_in addr, Server & server):
   sockfd(sockfd),
@@ -55,6 +56,7 @@ bool Client::is_registered() const {
 
 std::string Client::name() const {
   std::stringstream ss;
+
   ss << this->nick;
   ss << "!" << this->user_name;
   ss << "@" << addr_string(this->sockfd);
