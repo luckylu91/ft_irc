@@ -1,35 +1,30 @@
 #pragma once
+
 #include <string>
-#include <vector>
-#include <sstream>
+#include <cctype>
 #include <netinet/in.h>
-#include "utils.hpp"
+#include "Server.hpp"
 
-struct Channel;
+class Server;
 
-struct Client {
-  Client(struct sockaddr_in addr, std::string nick, std::string real_name, std::string user_name):
-    addr(addr),
-    nick(nick),
-    user_name(user_name),
-    real_name(real_name),
-    channels()
-  {}
+class Client {
+public:
+  Client(int sockfd, struct sockaddr_in addr, Server & server);
 
-  friend bool operator==(Client const & a, Client const & b) {
-    return a.nick == b.nick;
-  }
+  void set_password(std::string const & password);
+  void set_user(std::string const & user_name, std::string const & real_name);
+  void set_nick(std::string const & nick);
+  bool is_registered() const;
+  std::string name() const;
 
-  void remove_channel(Channel const & channel);
-
-  std::string client_name() {
-    return ::client_name(this->nick, this->user_name, this->addr);
-  }
-
-  // address
+private:
+  int sockfd;
   struct sockaddr_in addr;
-  std::string nick; // len max: 9
+  Server & server;
+  std::string nick;
   std::string user_name;
   std::string real_name;
-  std::vector<Channel const *> channels;
+  bool is_identified;
+  bool is_user;
+  bool is_nick;
 };
