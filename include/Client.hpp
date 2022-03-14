@@ -4,9 +4,10 @@
 #include <cctype>
 #include <netinet/in.h>
 #include <vector>
-#include "Server.hpp"
-#include "Channel.hpp"
+
 class Server;
+class Channel;
+class Message;
 
 class Client {
 public:
@@ -20,7 +21,9 @@ public:
   int get_sockfd() const { return this->sockfd; }
   std::string get_nick() const { return this->nick; }
   void remove_channel(Channel const * channel);
-  void add_channel(Channel * chan);
+  void add_channel(Channel const * chan);
+  Message base_privmsg() const;
+  void send_message(Client const * dest, std::string const & content) const;
 
 private:
   int sockfd;

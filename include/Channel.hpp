@@ -12,14 +12,11 @@ public:
 
   void remove_client(Client * client);
   int add_client(Client * c);
-  std::string get_name() { return this->name; }
+  std::string get_name() const { return this->name; }
 
 private:
   Server & server;
   std::vector<Client *> opers;
   std::vector<Client *> clients;
-
-private:
-  std::vector<Client const *> clients;
   std::string name;
 };

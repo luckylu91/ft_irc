@@ -15,13 +15,18 @@ public:
   void remove_client(Client const * client);
   void remove_client_sockfd(int sockfd);
   // Client * find_client_by_addr(struct sockaddr_in addr);
-  // Client * find_client_by_nick(std::string const & nick);
   Client * find_client_by_sockfd(int sockfd);
+  Client * find_client_by_nick(std::string const & nick);
+  Client * find_clients_by_nickmask(std::string const & nickmask);
+  Channel * find_channel_by_name(std::string const & name);
   bool try_password(Client const * client, std::string const & password) const;
   bool nick_exists(std::string const & nick) const;
   void send_message(Client const *, Message const & message) const;
   void receive_message(int sockfd, Message const & message);
   void welcome(Client const * client) const;
+  void privmsg(Client const * source, std::string const & msgtarget, std::string message) const;
+  void msg_client(Client const * src, Client const * dest) const;
+  void msg_channel(Client const * src, Channel const * dest) const;
 
   Message base_message(std::string const & command) const;
   void rpl_welcome(Client const * client) const;
@@ -36,6 +41,7 @@ public:
   void err_restricted(Client const * client) const;
   void err_passwdmismatch(Client const * client) const;
   void err_alreadyregistered(Client const * client) const;
+  void err_nosuchnick(Client const * client, std::string const & nick) const;
 
   void join_cmd(Client * c, std::string chan_name);
 private:
@@ -53,6 +59,10 @@ struct SameNick {
 
 struct SameSockfd {
   bool operator()(int sockfd, Client const * client);
+};
+
+struct SameChannelName {
+  bool operator()(std::string const & name, Channel const * channel);
 };
 
 struct RemoveClientFromChannel {
