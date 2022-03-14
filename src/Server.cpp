@@ -3,6 +3,7 @@
 #include "Message.hpp"
 #include "utils.hpp"
 #include "errors.hpp"
+#include "Channel.hpp"
 #include "numeric_codes.hpp"
 #include <unistd.h>
 #include <ctime>
@@ -71,6 +72,8 @@ void Server::receive_message(int sockfd, Message const & message) {
     }
     client->set_password(message.get_param()[0]);
   }
+
+  else if (message.get_command() == "JOIN") {
 }
 
 void Server::welcome(Client const * client) const {
@@ -157,6 +160,18 @@ void Server::err_passwdmismatch(Client const * client) const {
   this->send_message(client, m);
 }
 
+void Server::join_cmd(Client * c, std::string chan_name)
+{
+  for(std::vector<Channel *>::iterator it = channels.begin(); it != channels.end();it++)
+  { 
+    if ((*it)->get_name() == chan_name)
+    {
+      (*it)->add_client(c);
+      return;
+    }
+  }
+  channels.push_back(new Channel(chan_name,c));
+}
 
 bool SameNick::operator()(std::string const & nick, Client const * client) {
   return nick == client->get_nick();
@@ -165,4 +180,6 @@ bool SameNick::operator()(std::string const & nick, Client const * client) {
 bool SameSockfd::operator()(int sockfd, Client const * client) {
   return sockfd == client->get_sockfd();
 }
+
+
 

@@ -2,10 +2,9 @@
 
 #include <vector>
 #include <string>
-
 class Client;
 class Message;
-
+class Channel;
 class Server {
 public:
   Server(std::string const & name, std::string const & version, std::string const & password);
@@ -33,12 +32,13 @@ public:
   void err_restricted(Client const * client) const;
   void err_passwdmismatch(Client const * client) const;
 
-
+  void join_cmd(Client * c, std::string chan_name);
 private:
   std::string name;
   std::string version;
   std::string password;
   std::vector<Client *> clients;
+  std::vector<Channel *> channels;
   time_t creation_time;
 };
 
