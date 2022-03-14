@@ -21,18 +21,33 @@ void Message::add_param(std::string const & param) {
   this->param.push_back(param);
 }
 
-void Message::parse(char *base, std::vector<Message> vec)
+void Message::parse(char *base, std::vector<Message> *vec)
 {
 	std::string temp = base;
 	int start =0;
-	int end;
-	while ((end = temp.find("\r\n",start))!=std::string::npos)
+	int end = 1;
+	// printf("parse de = |%s| \n",base);
+	while (end!=std::string::npos)
 	{
-		vec.push_back(parse_one(temp.substr(start,end)));
+
+	// printf("in while= |%s| \n",&temp[start]);
+		end = temp.find("\r\n",start);
+		if (end == std::string::npos)
+		{	
+		// printf("ici 1 \n");
+			return;
+			// vec.push_back(parse_one(temp.substr(start)));
+		}
+		else
+		{
+		// printf("ici 2 \n");
+		vec->push_back(parse_one(temp.substr(start,end)));
+
+		// printf("taille de vec in parse %i\n",vec->size());
 		start = end+2;
+		}
 	}
 	
-
 }
 
 

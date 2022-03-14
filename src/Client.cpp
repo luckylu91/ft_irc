@@ -66,13 +66,18 @@ void Client::set_user(std::string const & user_name, std::string const & real_na
 void Client::set_nick(std::string const & nick) {
   std::cout << "SET_NICK" << std::endl;
   if (invalid_nick(nick)) {
+  std::cout << "INVALIDE NICK" << std::endl;
     // ERR_ERRONEUSNICKNAME (432)
   }
   if (this->server.nick_exists(nick)) {
+
+  std::cout << "NICK EXISTS" << std::endl;
     // ERR_NICKNAMEINUSE (433)
   }
   this->nick = nick;
-  if (!this->is_nick && this->is_identified && this->is_user) {
+
+  std::cout << " debug dans setnick " <<"is_nick = "<<is_nick<<"is_identified = "<<is_identified<<"is_user = "<<is_user<< std::endl;
+  if (!this->is_nick && !this->is_identified && !this->is_user) {
     std::cout << "REGISTERED" << std::endl;
     this->server.welcome(this);
   }

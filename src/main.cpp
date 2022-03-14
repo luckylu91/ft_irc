@@ -16,6 +16,7 @@
 #include "Server.hpp"
 
 
+
 void error(const char *msg)
 {
 	perror(msg);
@@ -51,14 +52,17 @@ int main(int argc, char *argv[])
 	kq = kqueue();
 	EV_SET(&event, sockfd, EVFILT_READ, EV_ADD | EV_ENABLE  , 0, 0, 0);
 
-	printf("before ident = %lu  \n",tevent.ident);
+	// printf("before ident = %lu  \n",tevent.ident);
 
 	ret = kevent(kq,&event, 1, NULL,0,NULL);
 	while (1)
 	{
-		printf("port = %i \n",cli_addr.sin_port);
+		vec.clear();
+		// printf("port = %i \n",cli_addr.sin_port);
+		 printf("tour de boucle infinie \n");
+		//
 		ret = kevent(kq, 0, 0, tevents,	20, NULL);
-		printf("ident = %lu \n",tevent.ident);
+		// printf("ident = %lu \n",tevent.ident);
 		for(int i = 0 ; i<ret; i++)
 		{
 			tevent = tevents[i];
@@ -97,7 +101,9 @@ int main(int argc, char *argv[])
 				printf("Here is the message: %s\n",buffer);
 				// Message m = Message::parse(buffer);
 				int cli_sockfd = static_cast<int>(tevent.ident);
-				Message::parse(buffer,vec);
+				Message::parse(buffer,&vec);
+				
+				printf("taille de size %i\n",vec.size());
 				for (std::vector<Message>::iterator it = vec.begin(); it != vec.end(); it++)
 				{
 					std::cout<<"message : "<<it->to_string()<<std::endl;

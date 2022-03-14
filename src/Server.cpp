@@ -43,7 +43,9 @@ bool Server::try_password(Client const * client, std::string const & password) c
 
 void Server::send_message(Client const * client, Message const & message) const {
   std::string message_str = message.to_string();
+  std::cout<<"debug dans cliend.cpp send message\n message = "<<message.to_string()<<std::endl;
   int n = write(client->get_sockfd(), message_str.c_str(), message_str.size());
+  std::cout<<"debug dans send message string = "<<message_str.c_str()<<" n ="<<n<<std::endl;
 	if (n < 0)
 		throw ClientSocketWriteException(client);
 }
@@ -54,6 +56,7 @@ void Server::receive_message(int sockfd, Message const & message) {
     if (message.get_param().size() == 0) {
       this->err_nonicknamegiven(client);
     }
+	std::cout<<"debug dans recerive avant set_nic\n";
     client->set_nick(message.get_param()[0]);
   }
   else if (message.get_command() == "USER") {
@@ -71,6 +74,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 }
 
 void Server::welcome(Client const * client) const {
+	
   this->rpl_welcome(client);
   this->rpl_yourhost(client);
   this->rpl_created(client);
