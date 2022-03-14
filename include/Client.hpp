@@ -5,7 +5,7 @@
 #include <netinet/in.h>
 #include <vector>
 #include "Server.hpp"
-
+#include "Channel.hpp"
 class Server;
 
 class Client {
@@ -20,9 +20,11 @@ public:
   int get_sockfd() const { return this->sockfd; }
   std::string get_nick() const { return this->nick; }
   void remove_channel(Channel const * channel);
+  void add_channel(Channel * chan);
 
 private:
   int sockfd;
+  std::vector<Channel *> chan;
   struct sockaddr_in addr;
   Server & server;
   std::vector<Channel *> channels;

@@ -73,11 +73,11 @@ void Client::set_nick(std::string const & nick) {
   }
   if (invalid_nick(nick)) {
     std::cout << "INVALIDE NICK" << std::endl;
-    this->server.err_erroneusnickname(this);
+    this->server.err_erroneusnickname(this, nick);
   }
   if (this->server.nick_exists(nick)) {
     std::cout << "NICK EXISTS" << std::endl;
-    this->server.err_nicknameinuse(this);
+    this->server.err_nicknameinuse(this, nick);
   }
   this->nick = nick;
 
