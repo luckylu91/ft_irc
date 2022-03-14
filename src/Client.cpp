@@ -36,25 +36,28 @@ Client::Client(int sockfd, struct sockaddr_in addr, Server & server):
 void Client::set_password(std::string const & password) {
   std::cout << "SET_PASSWORD" << std::endl;
   if (this->is_registered()) {
-    // ERR_ALREADYREGISTRED (462)
+    this->server.err_alreadyregistred(this);
   }
   if (this->server.try_password(this, password)) {
     this->is_identified = true;
   }
   else {
-    //  ERR_PASSWDMISMATCH (464)
     this->is_identified = false;
+    this->server.err_passwdmismatch(this);
   }
 }
 
 void Client::set_user(std::string const & user_name, std::string const & real_name) {
   std::cout << "SET_USER" << std::endl;
+  if (!this->is_identified && this->is_nick) {
+    this->server.err_passwdmismatch(this);
+  }
   if (this->is_registered()) {
-    // ERR_ALREADYREGISTERED (462)
+    this->server.err_alreadyregistred(this);
   }
   this->user_name = user_name;
   this->real_name = real_name;
-  if (!this->is_user && this->is_identified && this->is_nick) {
+  if (!this->is_user && this->is_nick) {
     std::cout << "REGISTERED" << std::endl;
     this->server.welcome(this);
   }
@@ -65,19 +68,21 @@ void Client::set_user(std::string const & user_name, std::string const & real_na
 // ERR_NONICKNAMEGIVEN (431)
 void Client::set_nick(std::string const & nick) {
   std::cout << "SET_NICK" << std::endl;
+  if (!this->is_identified && this->is_user) {
+    this->server.err_passwdmismatch(this);
+  }
   if (invalid_nick(nick)) {
-  std::cout << "INVALIDE NICK" << std::endl;
-    // ERR_ERRONEUSNICKNAME (432)
+    std::cout << "INVALIDE NICK" << std::endl;
+    this->server.err_erroneusnickname(this);
   }
   if (this->server.nick_exists(nick)) {
-
-  std::cout << "NICK EXISTS" << std::endl;
-    // ERR_NICKNAMEINUSE (433)
+    std::cout << "NICK EXISTS" << std::endl;
+    this->server.err_nicknameinuse(this);
   }
   this->nick = nick;
 
   std::cout << " debug dans setnick " <<"is_nick = "<<is_nick<<"is_identified = "<<is_identified<<"is_user = "<<is_user<< std::endl;
-  if (!this->is_nick && !this->is_identified && !this->is_user) {
+  if (!this->is_nick && this->is_user) {
     std::cout << "REGISTERED" << std::endl;
     this->server.welcome(this);
   }
@@ -95,4 +100,8 @@ std::string Client::name() const {
   ss << "!" << this->user_name;
   ss << "@" << addr_string(this->addr);
   return ss.str();
+}
+
+void Client::remove_channel(Channel const * channel) {
+  remove_from_vector(channel, this->channels);
 }

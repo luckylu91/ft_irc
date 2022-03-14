@@ -1,3 +1,33 @@
+- PASS
+- NICK
+- USER
+
+- JOIN
+- PRIVMSG
+- NOTICE
+- OPER
+
+- MODE
+- QUIT
+- PART
+- MODE
+- TOPIC
+- NAMES
+- LIST
+- INVITE
+- KICK
+- MOTD
+- LUSERS
+- VERSION
+- STATS
+- TIME
+- ADMIN
+- INFO
+- WHO
+- WHOIS
+- WHOWAS
+- USERS
+
 3.1 Connection Registration
 
    The commands described here are used to register a connection with an

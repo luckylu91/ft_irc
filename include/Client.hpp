@@ -3,6 +3,7 @@
 #include <string>
 #include <cctype>
 #include <netinet/in.h>
+#include <vector>
 #include "Server.hpp"
 
 class Server;
@@ -18,11 +19,13 @@ public:
   std::string name() const;
   int get_sockfd() const { return this->sockfd; }
   std::string get_nick() const { return this->nick; }
+  void remove_channel(Channel const * channel);
 
 private:
   int sockfd;
   struct sockaddr_in addr;
   Server & server;
+  std::vector<Channel *> channels;
   std::string nick;
   std::string user_name;
   std::string real_name;

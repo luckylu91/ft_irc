@@ -5,12 +5,15 @@
 
 class Client;
 class Message;
+class Channel;
 
 class Server {
 public:
   Server(std::string const & name, std::string const & version, std::string const & password);
 
   void new_client(int sockfd, struct sockaddr_in addr);
+  void remove_client(Client const * client);
+  void remove_client_sockfd(int sockfd);
   // Client * find_client_by_addr(struct sockaddr_in addr);
   // Client * find_client_by_nick(std::string const & nick);
   Client * find_client_by_sockfd(int sockfd);
@@ -32,6 +35,7 @@ public:
   void err_nicknameinuse(Client const * client, std::string const & nick) const; //attempt to change to a currently existing nickname.
   void err_restricted(Client const * client) const;
   void err_passwdmismatch(Client const * client) const;
+  void err_alreadyregistered(Client const * client) const;
 
 
 private:
@@ -39,6 +43,7 @@ private:
   std::string version;
   std::string password;
   std::vector<Client *> clients;
+  std::vector<Channel *> channels;
   time_t creation_time;
 };
 
@@ -49,3 +54,19 @@ struct SameNick {
 struct SameSockfd {
   bool operator()(int sockfd, Client const * client);
 };
+
+struct RemoveClientFromChannel {
+  void operator()(Client * client, Channel * channel);
+}
+
+
+// ERR_BANNEDFROMCHAN
+// ERR_INVITEONLYCHAN
+// ERR_BADCHANNELKEY
+// ERR_CHANNELISFULL
+// ERR_BADCHANMASK
+// ERR_NOSUCHCHANNEL
+// ERR_TOOMANYCHANNELS
+// ERR_TOOMANYTARGETS
+// ERR_UNAVAILRESOURCE
+// RPL_TOPIC

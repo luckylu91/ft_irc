@@ -2,19 +2,19 @@
 
 #include <algorithm>
 
-template <class T1, class T2, class BinaryPredicate>
-struct IsSame {
+template <class T1, class T2, class BinaryPredicate, class ReturnType>
+struct ParametrizedUnaryFunction {
   T1 const & a;
 
-  IsSame(T1 const & a): a(a) {}
-  bool operator()(T2 const & b) {
+  ParametrizedUnaryFunction(T1 const & a): a(a) {}
+  ReturnType operator()(T2 const & b) {
     return BinaryPredicate()(a, b);
   }
 };
 
 template <class Compare, class A, class Vector>
 typename Vector::iterator find_in_vector(A const & a, Vector & vec) {
-  IsSame<A, typename Vector::value_type, Compare> compare_to_a(a);
+  ParametrizedUnaryFunction<A, typename Vector::value_type, Compare, bool> compare_to_a(a);
   return std::find_if(
     vec.begin(),
     vec.end(),
@@ -24,7 +24,7 @@ typename Vector::iterator find_in_vector(A const & a, Vector & vec) {
 
 template <class Compare, class A, class Vector>
 typename Vector::const_iterator find_in_vector(A const & a, Vector const & vec) {
-  IsSame<A, typename Vector::value_type, Compare> compare_to_a(a);
+  ParametrizedUnaryFunction<A, typename Vector::value_type, Compare, bool> compare_to_a(a);
   return std::find_if(
     vec.begin(),
     vec.end(),
@@ -35,4 +35,20 @@ typename Vector::const_iterator find_in_vector(A const & a, Vector const & vec) 
 template <class Compare, class A, class Vector>
 bool is_in_vector(A const & a, Vector const & vec) {
   return find_in_vector<Compare, A, Vector>(a, vec) != vec.end();
+}
+
+template <class Action, class A, class Vector>
+typename Vector::iterator for_each_in_vector(A const & a, Vector & vec) {
+  ParametrizedUnaryFunction<A, typename Vector::value_type, Action, void> act_on_a(a);
+  std::for_each(
+    vec.begin(),
+    vec.end(),
+    act_on_a
+  );
+}
+
+template <class A, class Vector>
+void remove_from_vector(A const & a, Vector & vec) {
+  typedef Vector::iterator it = std::remove(vec.begin(), vec.last(), a);
+  vec.resize(static_cast<size_type>(it - vec.begin()));
 }

@@ -1,5 +1,6 @@
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 #include "Message.hpp"
 #include "utils.hpp"
 #include "errors.hpp"
@@ -34,10 +35,15 @@ void Server::new_client(int sockfd, struct sockaddr_in addr) {
   this->clients.push_back(client);
 }
 
+void Server::remove_client(Client const * client) {
+  for_each_in_vector<RemoveClientFromChannel>(client, this->channels);
+}
+
+void Server::remove_client_sockfd(int sockfd) {
+
+}
+
 bool Server::try_password(Client const * client, std::string const & password) const {
-  if (password != this->password) {
-    this->err_passwdmismatch(client);
-  }
   return password == this->password;
 }
 
@@ -74,7 +80,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 }
 
 void Server::welcome(Client const * client) const {
-	
+
   this->rpl_welcome(client);
   this->rpl_yourhost(client);
   this->rpl_created(client);
@@ -98,18 +104,17 @@ Message Server::base_message(std::string const & command) const {
 void Server::rpl_welcome(Client const * client) const {
   Message m = this->base_message(RPL_WELCOME);
 
-  m.add_param("Welcome to the Internet Relay Network" + client->name());
+  m.add_param("Welcome to the Internet Relay Network " + client->name());
   this->send_message(client, m);
 }
 void Server::rpl_yourhost(Client const * client) const {
   Message m = this->base_message(RPL_YOURHOST);
-  m.add_param("Your host is" + this->name + "running version" + this->version);
+  m.add_param("Your host is " + this->name + " running version " + this->version);
   this->send_message(client, m);
 }
 void Server::rpl_created(Client const * client) const {
   Message m = this->base_message(RPL_CREATED);
-  m.add_param("This server was created" + std::string(ctime(&this->creation_time)));
-  m.add_param("Not enough parameters");
+  m.add_param("This server was created " + std::string(ctime(&this->creation_time)));
   this->send_message(client, m);
 }
 void Server::rpl_myinfo(Client const * client) const {
@@ -164,5 +169,10 @@ bool SameNick::operator()(std::string const & nick, Client const * client) {
 
 bool SameSockfd::operator()(int sockfd, Client const * client) {
   return sockfd == client->get_sockfd();
+}
+
+void RemoveClientFromChannel::operator()(Client * client, Channel * channel) {
+  channel->remove_client(client);
+  client->remove_channel(channel);
 }
 
