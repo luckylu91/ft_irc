@@ -37,7 +37,7 @@ public:
   void err_passwdmismatch(Client const * client) const;
   void err_alreadyregistered(Client const * client) const;
 
-  void join_cmd(Client * c, std::string chan_name);
+  int join_cmd(Client * c, std::string chan_name);
 private:
   std::string name;
   std::string version;

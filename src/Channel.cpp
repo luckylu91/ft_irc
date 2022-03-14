@@ -21,3 +21,20 @@ int Channel::add_client(Client * c) {
     return 1;
   }
 }
+
+std::string Channel::op_cli_message(){
+	std::string r;
+	
+	for(std::vector<Client *>::iterator it = opers.begin(); it != opers.end();it++)
+	{
+		r.append("@");
+		r.append((*it)->get_nick());
+		r.append(" ");
+	}
+	for(std::vector<Client *>::iterator it = clients.begin(); it != clients.end();it++)
+	{
+		r.append((*it)->get_nick());
+		r.append(" ");
+	}
+	return r;
+}
