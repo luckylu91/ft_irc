@@ -24,3 +24,5 @@
 // "<nick> :Nickname is already in use"
 #define ERR_RESTRICTED "484"
 // ":Your connection is restricted!"
+#define ERR_NOSUCHNICK "401"
+// "<nickname> :No such nick/channel"

@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include "Client.hpp"
+#include "Message.hpp"
 #include <sstream>
 #include <iostream>
 
@@ -104,4 +105,17 @@ std::string Client::name() const {
 
 void Client::remove_channel(Channel const * channel) {
   remove_from_vector(channel, this->channels);
+}
+
+Message Client::base_privmsg() const {
+  Message message;
+  message.set_source(this->name());
+  message.set_command("PRIVMSG");
+}
+
+void Client::send_message(Client const * dest, std::string const & content) const {
+  Message message = this->base_privmsg();
+  message.add_param(dest->name);
+  message.add_param(content);
+  this->server.send_message(this, message);
 }
