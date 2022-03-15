@@ -33,6 +33,12 @@ public:
   void rpl_yourhost(Client const * client) const;
   void rpl_created(Client const * client) const;
   void rpl_myinfo(Client const * client) const;
+  //join
+void rpl_join(Client const * client, Channel const * chan) const;
+
+void rpl_notopic(Client const * client, Channel const * chan) const;
+void rpl_namreply(Client const * client, Channel const * chan) const ;
+
   void err_needmoreparams(Client const * client, std::string const & command) const;
   void err_alreadyregistred(Client const * client) const;
   void err_nonicknamegiven(Client const * client) const;
@@ -69,7 +75,7 @@ struct SameChannelName {
 
 struct RemoveClientFromChannel {
   void operator()(Client * client, Channel * channel);
-}
+};
 
 
 // ERR_BANNEDFROMCHAN

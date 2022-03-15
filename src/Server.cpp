@@ -111,9 +111,9 @@ void Server::receive_message(int sockfd, Message const & message) {
 				temp.erase(f);
 			if(	join_cmd(client,chan_name))
 			{
-				rpl_join(client,get_chan_by_name(chan_name));
-				rpl_notopic(client,get_chan_by_name(chan_name));
-				rpl_namreply(client,get_chan_by_name(chan_name));
+				rpl_join(client,find_channel_by_name(chan_name));
+				rpl_notopic(client,find_channel_by_name(chan_name));
+				rpl_namreply(client,find_channel_by_name(chan_name));
 			}
 			else
 			{
@@ -139,7 +139,7 @@ int Server::join_cmd(Client * c, std::string chan_name)
 		if ((*it)->get_name() == chan_name)
 		{
 			(*it)->add_client(c);
-			return;
+			return 0;
 		}
 	}
 	channels.push_back(new Channel(chan_name,c));
