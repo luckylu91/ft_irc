@@ -152,7 +152,7 @@ void Server::welcome(Client const * client) const {
 	this->rpl_created(client);
 	this->rpl_myinfo(client);
 
-  
+
 }
 
 // ERR_NORECIPIENT
@@ -222,17 +222,17 @@ void Server::rpl_myinfo(Client const * client) const {
 
 void Server::rpl_join(Client const * client, Channel const * chan) const {
 	Message m = this->base_message("JOIN");
-	m.add_param(chan->name); 
+	m.add_param(chan->name);
 	this->send_message(client, m);
 }
 void Server::rpl_notopic(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(RPL_NOTOPIC);
-	m.add_param(chan->name); 
+	m.add_param(chan->name);
 	this->send_message(client, m);
 }
 void Server::rpl_namreply(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(RPL_NAMREPLY);
-	m.add_param(chan.op_cli_message()); 
+	m.add_param(chan.op_cli_message());
 	this->send_message(client, m);
 }
 // ERR
@@ -280,6 +280,19 @@ void Server::err_nosuchnick(Client const * client, std::string const & nick) con
   m.add_param("No such nick/channel");
   this->send_message(client, m);
 }
+
+void Server::err_norecipient(Client const * client, std::string const & command) const {
+	Message m = this->base_message(ERR_NORECIPIENT);
+	m.add_param("No recipient given (" + command + ")");
+	this->send_message(client, m);
+}
+
+void Server::err_notexttosend(Client const * client) const {
+	Message m = this->base_message(ERR_NOTEXTTOSEND);
+	m.add_param("No text to send");
+	this->send_message(client, m);
+}
+
 
 
 

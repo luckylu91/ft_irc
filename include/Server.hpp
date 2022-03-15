@@ -42,6 +42,8 @@ public:
   void err_passwdmismatch(Client const * client) const;
   void err_alreadyregistered(Client const * client) const;
   void err_nosuchnick(Client const * client, std::string const & nick) const;
+  void err_norecipient(Client const * client, std::string const & command) const;
+  void err_notexttosend(Client const * client) const;
 
   int join_cmd(Client * c, std::string chan_name);
 private:
