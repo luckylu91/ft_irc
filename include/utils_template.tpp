@@ -49,6 +49,6 @@ typename Vector::iterator for_each_in_vector(A const & a, Vector & vec) {
 
 template <class A, class Vector>
 void remove_from_vector(A const & a, Vector & vec) {
-  typedef Vector::iterator it = std::remove(vec.begin(), vec.last(), a);
-  vec.resize(static_cast<size_type>(it - vec.begin()));
+  typename Vector::iterator it = std::remove(vec.begin(), vec.end(), a);
+  vec.resize(static_cast<size_t>(it - vec.begin()));
 }

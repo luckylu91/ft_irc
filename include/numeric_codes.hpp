@@ -10,6 +10,10 @@
 #define RPL_MYINFO "004"
 // "<servername> <version> <available user modes> <available channel modes>"
 
+#define RPL_NOTOPIC "331"
+//reply: <channel> :No topic is set
+#define RPL_NAMREPLY "353"
+//reply: <channel> :[[@|+]<nick> [[@|+]<nick> [...]]]
 #define ERR_NEEDMOREPARAMS "461"
 // "<command> :Not enough parameters"
 #define ERR_ALREADYREGISTRED "462"
