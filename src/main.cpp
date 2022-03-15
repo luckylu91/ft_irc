@@ -102,8 +102,8 @@ int main(int argc, char *argv[])
 				// Message m = Message::parse(buffer);
 				int cli_sockfd = static_cast<int>(tevent.ident);
 				Message::parse(buffer,&vec);
-				
-				printf("taille de size %i\n",vec.size());
+
+				printf("taille de size %lu\n",vec.size());
 				for (std::vector<Message>::iterator it = vec.begin(); it != vec.end(); it++)
 				{
 					std::cout<<"message : "<<it->to_string()<<std::endl;

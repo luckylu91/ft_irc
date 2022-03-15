@@ -53,7 +53,7 @@ void Server::new_client(int sockfd, struct sockaddr_in addr) {
 	this->clients.push_back(client);
 }
 
-void Server::remove_client(Client const * client) {
+void Server::remove_client(Client * client) {
 	for_each_in_vector<RemoveClientFromChannel>(client, this->channels);
 }
 
@@ -127,7 +127,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 		if (message.get_param().size() == 0)
 		return this->err_norecipient(client, "PRIVMSG");
 		if (message.get_param().size() == 1)
-		return this->err_notexttosend(client, "PRIVMSG");
+		return this->err_notexttosend(client);
 		this->privmsg(client, message.get_param()[0], message.get_param()[1]);
   	}
 }
@@ -145,15 +145,6 @@ int Server::join_cmd(Client * c, std::string chan_name)
 	channels.push_back(new Channel(chan_name,c));
 	return 1;
 }
-void Server::welcome(Client const * client) const {
-
-	this->rpl_welcome(client);
-	this->rpl_yourhost(client);
-	this->rpl_created(client);
-	this->rpl_myinfo(client);
-
-
-}
 
 // ERR_NORECIPIENT
 // ERR_NOTEXTTOSEND
@@ -163,7 +154,7 @@ void Server::welcome(Client const * client) const {
 // ERR_TOOMANYTARGETS
 // ERR_NOSUCHNICK
 // RPL_AWAY
-void Server::privmsg(Client const * src, std::string const & msgtarget, std::string message) const {
+void Server::privmsg(Client const * src, std::string const & msgtarget, std::string const & message) {
   Client * dest_client = this->find_client_by_nick(msgtarget);
   if (dest_client != NULL) {
     src->send_message(dest_client, message);
@@ -177,6 +168,10 @@ void Server::privmsg(Client const * src, std::string const & msgtarget, std::str
   this->err_nosuchnick(src, msgtarget);
 }
 
+void Server::msg_channel(Client const * src, Channel const * dest, std::string const & message) const {
+  return ;
+}
+
 void Server::welcome(Client const * client) const {
   this->rpl_welcome(client);
   this->rpl_yourhost(client);
@@ -184,7 +179,7 @@ void Server::welcome(Client const * client) const {
   this->rpl_myinfo(client);
 }
 
-bool Server::nick_exists(std::string const & nick) const {
+bool Server::nick_exists(std::string const & nick) {
 	client_iterator it = find_in_vector<SameNick>(nick, this->clients);
 	return (it != this->clients.end());
 }
@@ -222,17 +217,17 @@ void Server::rpl_myinfo(Client const * client) const {
 
 void Server::rpl_join(Client const * client, Channel const * chan) const {
 	Message m = this->base_message("JOIN");
-	m.add_param(chan->name);
+	m.add_param(chan->get_name());
 	this->send_message(client, m);
 }
 void Server::rpl_notopic(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(RPL_NOTOPIC);
-	m.add_param(chan->name);
+	m.add_param(chan->get_name());
 	this->send_message(client, m);
 }
 void Server::rpl_namreply(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(RPL_NAMREPLY);
-	m.add_param(chan.op_cli_message());
+	m.add_param(chan->op_cli_message());
 	this->send_message(client, m);
 }
 // ERR

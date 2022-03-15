@@ -12,7 +12,7 @@ public:
   Server(std::string const & name, std::string const & version, std::string const & password);
 
   void new_client(int sockfd, struct sockaddr_in addr);
-  void remove_client(Client const * client);
+  void remove_client(Client * client);
   void remove_client_sockfd(int sockfd);
   // Client * find_client_by_addr(struct sockaddr_in addr);
   Client * find_client_by_sockfd(int sockfd);
@@ -20,13 +20,12 @@ public:
   Client * find_clients_by_nickmask(std::string const & nickmask);
   Channel * find_channel_by_name(std::string const & name);
   bool try_password(Client const * client, std::string const & password) const;
-  bool nick_exists(std::string const & nick) const;
+  bool nick_exists(std::string const & nick);
   void send_message(Client const *, Message const & message) const;
   void receive_message(int sockfd, Message const & message);
   void welcome(Client const * client) const;
-  void privmsg(Client const * source, std::string const & msgtarget, std::string message) const;
-  void msg_client(Client const * src, Client const * dest) const;
-  void msg_channel(Client const * src, Channel const * dest) const;
+  void privmsg(Client const * source, std::string const & msgtarget, std::string const & message);
+  void msg_channel(Client const * src, Channel const * dest, std::string const & message) const;
 
   Message base_message(std::string const & command) const;
   void rpl_welcome(Client const * client) const;

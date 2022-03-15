@@ -12,8 +12,8 @@ public:
 
   void remove_client(Client * client);
   int add_client(Client * c);
-  std::string get_name() { return this->name; }
-  std::string op_cli_message();
+  std::string get_name() const { return this->name; }
+  std::string op_cli_message() const;
 private:
   Server & server;
   std::vector<Client *> opers;

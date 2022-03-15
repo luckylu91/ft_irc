@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <iostream>
 
-typedef std::vector<Client const *>::const_iterator client_iterator; 
+typedef std::vector<Client const *>::const_iterator client_iterator;
 void Channel::remove_client(Client * client) {
   remove_from_vector(client, this->clients);
   remove_from_vector(client, this->opers);
@@ -23,9 +23,9 @@ int Channel::add_client(Client * c) {
   }
 }
 
-std::string Channel::op_cli_message(){
+std::string Channel::op_cli_message() const {
 	std::string r;
-	
+
 	for(client_iterator it = opers.begin(); it != opers.end();it++)
 	{
 		r.append("@");
