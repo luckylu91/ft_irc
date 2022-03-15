@@ -15,12 +15,12 @@ public:
   void remove_client(Client * client);
   void remove_client_sockfd(int sockfd);
   // Client * find_client_by_addr(struct sockaddr_in addr);
-  Client * find_client_by_sockfd(int sockfd);
-  Client * find_client_by_nick(std::string const & nick);
-  Client * find_clients_by_nickmask(std::string const & nickmask);
-  Channel * find_channel_by_name(std::string const & name);
+  Client * find_client_by_sockfd(int sockfd) const;
+  Client * find_client_by_nick(std::string const & nick) const;
+  Client * find_clients_by_nickmask(std::string const & nickmask) const;
+  Channel * find_channel_by_name(std::string const & name) const;
   bool try_password(Client const * client, std::string const & password) const;
-  bool nick_exists(std::string const & nick);
+  bool nick_exists(std::string const & nick) const;
   void send_message(Client const *, Message const & message) const;
   void receive_message(int sockfd, Message const & message);
   void welcome(Client const * client) const;

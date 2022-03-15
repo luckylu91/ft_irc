@@ -20,11 +20,11 @@ Server::Server(std::string const & name, std::string const & version, std::strin
 	creation_time(time(0)) {}
 
 
-	Client * Server::find_client_by_sockfd(int sockfd) {
+	Client * Server::find_client_by_sockfd(int sockfd) const {
 		return *find_in_vector<SameSockfd>(sockfd, this->clients);
 	}
 
-Client * Server::find_client_by_nick(std::string const & nick) {
+Client * Server::find_client_by_nick(std::string const & nick) const {
   client_iterator it = find_in_vector<SameNick>(nick, this->clients);
   if (it != this->clients.end())
     return *it;
@@ -32,7 +32,7 @@ Client * Server::find_client_by_nick(std::string const & nick) {
     return NULL;
 }
 
-Channel * Server::find_channel_by_name(std::string const & name) {
+Channel * Server::find_channel_by_name(std::string const & name) const {
   channel_iterator it = find_in_vector<SameChannelName>(name, this->channels);
   if (it != this->channels.end())
     return *it;
@@ -179,7 +179,7 @@ void Server::welcome(Client const * client) const {
   this->rpl_myinfo(client);
 }
 
-bool Server::nick_exists(std::string const & nick) {
+bool Server::nick_exists(std::string const & nick) const {
 	client_iterator it = find_in_vector<SameNick>(nick, this->clients);
 	return (it != this->clients.end());
 }

@@ -23,8 +23,8 @@ typename Vector::iterator find_in_vector(A & a, Vector & vec) {
 }
 
 template <class Compare, class A, class Vector>
-typename Vector::const_iterator find_in_vector(A const & a, Vector const & vec) {
-  ParametrizedUnaryFunction<A, typename Vector::value_type, Compare, bool> compare_to_a(a);
+typename Vector::const_iterator find_in_vector(A & a, Vector const & vec) {
+  ParametrizedUnaryFunction<A, const typename Vector::value_type, Compare, bool> compare_to_a(a);
   return std::find_if(
     vec.begin(),
     vec.end(),
