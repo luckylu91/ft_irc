@@ -18,7 +18,6 @@ public:
   void insert_param(std::size_t position, std::string const & param);
   std::string to_string() const;
 	friend std::ostream& operator<<(std::ostream & out, Message const & m);
-
   static void parse(char *base, std::vector<Message> *vec);
   static Message parse_one(std::string s);
 
