@@ -163,7 +163,7 @@ int Server::join_cmd(Client * c, std::string chan_name)
 		{
       add_if_no_in(c, (*it)->get_clients());
       add_if_no_in(*it, c->get_channels());
-			return 0;
+			return 1;
 		}
 	}
 	channels.push_back(new Channel(*this, chan_name,c));
@@ -186,6 +186,7 @@ void Server::privmsg(Client const * src, std::string const & msgtarget, std::str
   }
   Channel * dest_channel = this->find_channel_by_name(msgtarget);
   if (dest_channel != NULL) {
+	  std::cout<<"debug dans privnessage channel message\n";
     dest_channel->forward_message(src, message);// this->msg_channel(src, dest_channel, message);
     return ;
   }
