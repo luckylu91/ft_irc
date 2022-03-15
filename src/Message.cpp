@@ -33,7 +33,7 @@ void Message::parse(char *base, std::vector<Message> *vec)
 	// printf("in while= |%s| \n",&temp[start]);
 		end = temp.find("\r\n",start);
 		if (end == std::string::npos)
-		{	
+		{
 		// printf("ici 1 \n");
 			return;
 			// vec.push_back(parse_one(temp.substr(start)));
@@ -47,7 +47,7 @@ void Message::parse(char *base, std::vector<Message> *vec)
 		start = end+2;
 		}
 	}
-	
+
 }
 
 
@@ -91,7 +91,7 @@ static bool param_has_spaces(std::string const & str) {
   return str.find(' ') != std::string::npos;
 }
 
-static void insert_params(std::stringstream & ss, std::vector<std::string> const & param) {
+static void insert_params_to_stream(std::stringstream & ss, std::vector<std::string> const & param) {
   if (param.size() == 0)
     return;
   string_iterator it_last = --param.end();
@@ -110,7 +110,8 @@ std::string Message::to_string() const {
   if (this->source_is_set)
     ss << ":" << this->source << " ";
   ss << this->command;
-  insert_params(ss, this->param);
+  insert_params_to_stream(ss, this->param);
+  ss << "\r\n";
   return ss.str();
 }
 
@@ -124,4 +125,8 @@ std::string Message::to_string() const {
 // 	out << endl;
 // 	return out;
 // }
+
+void Message::insert_param(std::size_t position, std::string const & param) {
+  this->param.insert(this->param.begin() + position, param);
+}
 

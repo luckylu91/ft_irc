@@ -15,13 +15,13 @@ public:
   std::string get_command() const { return this->command; }
   std::vector<std::string> const & get_param() const { return this->param; }
   void add_param(std::string const & param);
-
-  static void parse(char *base, std::vector<Message> *vec);
-
-  static Message parse_one(std::string s);
-
+  void insert_param(std::size_t position, std::string const & param);
   std::string to_string() const;
 	friend std::ostream& operator<<(std::ostream & out, Message const & m);
+
+  static void parse(char *base, std::vector<Message> *vec);
+  static Message parse_one(std::string s);
+
 
 private:
   bool source_is_set;

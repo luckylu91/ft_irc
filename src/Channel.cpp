@@ -1,6 +1,7 @@
 #include "Channel.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Message.hpp"
 #include "utils.hpp"
 #include <algorithm>
 #include <iostream>
@@ -9,18 +10,6 @@ typedef std::vector<Client const *>::const_iterator client_iterator;
 void Channel::remove_client(Client * client) {
   remove_from_vector(client, this->clients);
   remove_from_vector(client, this->opers);
-}
-
-int Channel::add_client(Client * c) {
-  if (std::find(clients.begin(), clients.end(),c) == clients.end()) {
-    clients.push_back(c);
-    c->add_channel(this);
-    return 0;
-  }
-  else {
-    std::cout<<"Debug message dans Add_client : Client deja dans le chan";
-    return 1;
-  }
 }
 
 std::string Channel::op_cli_message() const {
@@ -38,4 +27,16 @@ std::string Channel::op_cli_message() const {
 		r.append(" ");
 	}
 	return r;
+}
+
+void Channel::forward_message(Client const * src, std::string const & content) const {
+  Message message;
+  message.set_source(src->name());
+  message.add_param(this->get_name());
+  message.add_param(content);
+  // for_each_in_vector<SendMessageToClient>
+}
+
+void SendMessageToClient::operator()(Message const & message, Client const * client) {
+  client->receive_message(message);
 }

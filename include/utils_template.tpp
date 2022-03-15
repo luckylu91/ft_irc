@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iostream>
 
 template <class T1, class T2, class BinaryPredicate, class ReturnType>
 struct ParametrizedUnaryFunction {
@@ -52,4 +53,16 @@ template <class A, class Vector>
 void remove_from_vector(A const & a, Vector & vec) {
   typename Vector::iterator it = std::remove(vec.begin(), vec.end(), a);
   vec.resize(static_cast<size_t>(it - vec.begin()));
+}
+
+template<class A, class Vector>
+int add_if_no_in(A const & a, Vector & vec) {
+  if (std::find(vec.begin(), vec.end(), a) == vec.end()) {
+    vec.push_back(a);
+    return 0;
+  }
+  else {
+    std::cout<<"Debug message dans add_if_no_in (probablement Add_client) : a deja dans le vec_a";
+    return 1;
+  }
 }

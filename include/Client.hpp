@@ -20,10 +20,11 @@ public:
   std::string name() const;
   int get_sockfd() const { return this->sockfd; }
   std::string get_nick() const { return this->nick; }
+  std::vector<Channel *> & get_channels() { return this->channels; }
   void remove_channel(Channel const * channel);
-  void add_channel(Channel const * chan);
   Message base_privmsg() const;
   void send_message(Client const * dest, std::string const & content) const;
+  void receive_message(Message const & message) const;
 
 private:
   int sockfd;

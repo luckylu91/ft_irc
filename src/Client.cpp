@@ -2,6 +2,7 @@
 #include "Client.hpp"
 #include "Server.hpp"
 #include "Message.hpp"
+#include "utils.hpp"
 #include <sstream>
 #include <iostream>
 
@@ -119,5 +120,9 @@ void Client::send_message(Client const * dest, std::string const & content) cons
   Message message = this->base_privmsg();
   message.add_param(dest->name());
   message.add_param(content);
+  this->server.send_message(this, message);
+}
+
+void Client::receive_message(Message const & message) const {
   this->server.send_message(this, message);
 }

@@ -138,11 +138,12 @@ int Server::join_cmd(Client * c, std::string chan_name)
 	{
 		if ((*it)->get_name() == chan_name)
 		{
-			(*it)->add_client(c);
+      add_if_no_in(c, (*it)->get_clients());
+      add_if_no_in(*it, c->get_channels());
 			return 0;
 		}
 	}
-	channels.push_back(new Channel(chan_name,c));
+	channels.push_back(new Channel(*this, chan_name,c));
 	return 1;
 }
 
@@ -162,14 +163,10 @@ void Server::privmsg(Client const * src, std::string const & msgtarget, std::str
   }
   Channel * dest_channel = this->find_channel_by_name(msgtarget);
   if (dest_channel != NULL) {
-    this->msg_channel(src, dest_channel, message);
+    dest_channel->forward_message(src, message);// this->msg_channel(src, dest_channel, message);
     return ;
   }
   this->err_nosuchnick(src, msgtarget);
-}
-
-void Server::msg_channel(Client const * src, Channel const * dest, std::string const & message) const {
-  return ;
 }
 
 void Server::welcome(Client const * client) const {
