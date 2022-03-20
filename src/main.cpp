@@ -22,7 +22,7 @@ void error(const char *msg)
 	perror(msg);
 	exit(0);
 }
-int main(int argc, char *argv[])
+int main(int, char *argv[])
 {
 	struct	kevent event;	 /* Event we want to monitor */
 	struct	kevent tevents[20];
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 				close(tevent.ident);
 
 			}
-			else if (tevent.ident == sockfd)
+			else if (static_cast<int>(tevent.ident) == sockfd)
 			{
 
 				printf("New connection\n");

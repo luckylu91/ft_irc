@@ -41,7 +41,7 @@ void Client::set_password(std::string const & password) {
   if (this->is_registered()) {
     this->server.err_alreadyregistred(this);
   }
-  if (this->server.try_password(this, password)) {
+  if (this->server.try_password(password)) {
     this->is_identified = true;
   }
   else {

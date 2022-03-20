@@ -19,7 +19,7 @@ public:
   Client * find_client_by_nick(std::string const & nick) const;
   Client * find_clients_by_nickmask(std::string const & nickmask) const;
   Channel * find_channel_by_name(std::string const & name) const;
-  bool try_password(Client const * client, std::string const & password) const;
+  bool try_password(std::string const & password) const;
   bool nick_exists(std::string const & nick) const;
   void send_message(Client const *, Message const & message) const;
   void receive_message(int sockfd, Message const & message);

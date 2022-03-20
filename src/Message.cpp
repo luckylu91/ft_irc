@@ -24,8 +24,8 @@ void Message::add_param(std::string const & param) {
 void Message::parse(char *base, std::vector<Message> *vec)
 {
 	std::string temp = base;
-	int start =0;
-	int end = 1;
+	std::size_t start =0;
+	std::size_t end = 1;
 	// printf("parse de = |%s| \n",base);
 	while (end!=std::string::npos)
 	{

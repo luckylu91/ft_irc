@@ -1,2 +1,5 @@
 a.out
 exp/
+*/**/test_exec
+ft_irc
+obj/

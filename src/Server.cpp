@@ -54,7 +54,7 @@ void Server::remove_client_sockfd(int sockfd) {
   this->clients.erase(it);
 }
 
-bool Server::try_password(Client const * client, std::string const & password) const {
+bool Server::try_password(std::string const & password) const {
 	return password == this->password;
 }
 
@@ -113,7 +113,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 				temp.erase(f+1);
 			}
 			else
-			{	
+			{
 	std::cout<<"IN JOIN 4 "<<temp<<"\n";
 				chan_name = temp;
 				temp.clear();
@@ -133,7 +133,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 				//bug creating chan
 				std::cout<<"Bug creating chan\n";
 			}
-			
+
 	std::cout<<"IN JOIN 6\n";
 		}
 
@@ -273,6 +273,7 @@ void Server::err_erroneusnickname(Client const * client, std::string const & nic
 }
 void Server::err_nicknameinuse(Client const * client, std::string const & nick) const {
 	Message m = this->base_message(ERR_NICKNAMEINUSE);
+  m.add_param(nick);
 	m.add_param("Nickname is already in use");
 	this->send_message(client, m);
 }
