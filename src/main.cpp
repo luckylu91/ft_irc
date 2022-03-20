@@ -15,7 +15,27 @@
 #include "Message.hpp"
 #include "Server.hpp"
 
+static void special_print(std::string const & s) {
+	std::size_t i;
 
+	for (i = 0; i < s.size(); i++) {
+		if (!std::isspace(s[i]) || s[i] == ' ')
+			std::cout << s[i];
+		else {
+			if (s[i] == '\f')
+				std::cout << "\\f";
+			else if (s[i] == '\n')
+				std::cout << "\\n";
+			else if (s[i] == '\r')
+				std::cout << "\\r";
+			else if (s[i] == '\t')
+				std::cout << "\\t";
+			else if (s[i] == '\v')
+				std::cout << "\\v";
+		}
+	}
+	std::cout << std::endl;
+}
 
 void error(const char *msg)
 {
@@ -69,16 +89,17 @@ int main(int, char *argv[])
 			if (tevent.flags & EV_EOF)
 			{
 
-				// printf("premier if flags = %hu ident = %lu\n",tevent.flags,tevent.ident);
 				printf("Client has disconnected\n");
+				printf("premier if flags = %hu ident = %lu\n",tevent.flags,tevent.ident);
 				close(tevent.ident);
-
+				server.remove_client_sockfd(static_cast<int>(tevent.ident));
 			}
 			else if (static_cast<int>(tevent.ident) == sockfd)
 			{
 
 				printf("New connection\n");
 				newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *)&clilen);
+				printf("newsockfd = %d\n", newsockfd);
 				server.new_client(newsockfd, cli_addr);
 				EV_SET(&event, newsockfd, EVFILT_READ, EV_ADD  , 0, 0, 0);
 
@@ -98,7 +119,8 @@ int main(int, char *argv[])
 					error("ERROR reading from socket");
 
 				// printf("troisieme if 3 \n");
-				printf("Here is the message: %s\n",buffer);
+				// printf("Here is the message: %s\n",buffer);
+				special_print(std::string() + "Here is the message: " + buffer);
 				// Message m = Message::parse(buffer);
 				int cli_sockfd = static_cast<int>(tevent.ident);
 				Message::parse(buffer,&vec);
@@ -106,7 +128,8 @@ int main(int, char *argv[])
 				printf("taille de size %lu\n",vec.size());
 				for (std::vector<Message>::iterator it = vec.begin(); it != vec.end(); it++)
 				{
-					std::cout<<"message : "<<it->to_string()<<std::endl;
+					// std::cout<<"message : "<<it->to_string()<<std::endl;
+					special_print(std::string() + "message : " + it->to_string());
 					server.receive_message(cli_sockfd, *it);
 				}
 				// std::cout<<m;

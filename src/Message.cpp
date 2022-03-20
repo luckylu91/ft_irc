@@ -11,14 +11,14 @@ Message::Message(): source_is_set(false) {}
 
 
 void Message::set_source(std::string const & source) {
-  this->source = source;
-  this->source_is_set = true;
+	this->source = source;
+	this->source_is_set = true;
 }
 void Message::set_command(std::string const & command) {
-  this->command = command;
+	this->command = command;
 }
 void Message::add_param(std::string const & param) {
-  this->param.push_back(param);
+	this->param.push_back(param);
 }
 
 void Message::parse(char *base, std::vector<Message> *vec)
@@ -53,9 +53,9 @@ void Message::parse(char *base, std::vector<Message> *vec)
 
 Message Message::parse_one(std::string s)
 {
-  Message message;
+	Message message;
 	char * base = &s[0];
-  char *temp =  strtok(base," ");
+	char *temp =  strtok(base," ");
 	if (temp[0] == ':')
 	{
 		message.set_source(temp);
@@ -84,35 +84,35 @@ Message Message::parse_one(std::string s)
 		message.param.push_back(temp);
 		temp =  strtok(NULL," ");
 	}
-  return message;
+	return message;
 }
 
 static bool param_has_spaces(std::string const & str) {
-  return str.find(' ') != std::string::npos;
+	return str.find(' ') != std::string::npos;
 }
 
 static void insert_params_to_stream(std::stringstream & ss, std::vector<std::string> const & param) {
-  if (param.size() == 0)
-    return;
-  string_iterator it_last = --param.end();
-  for (string_iterator it = param.begin(); it != it_last; ++it) {
-    ss << " " << *it;
-  }
-  ss << " ";
-  if (param_has_spaces(*it_last))
-    ss << ":";
-  ss << *it_last;
+	if (param.size() == 0)
+		return;
+	string_iterator it_last = --param.end();
+	for (string_iterator it = param.begin(); it != it_last; ++it) {
+		ss << " " << *it;
+	}
+	ss << " ";
+	if (param_has_spaces(*it_last))
+		ss << ":";
+	ss << *it_last;
 }
 
 std::string Message::to_string() const {
-  std::stringstream ss;
+	std::stringstream ss;
 
-  if (this->source_is_set)
-    ss << ":" << this->source << " ";
-  ss << this->command;
-  insert_params_to_stream(ss, this->param);
-  ss << "\r\n";
-  return ss.str();
+	if (this->source_is_set)
+		ss << ":" << this->source << " ";
+	ss << this->command;
+	insert_params_to_stream(ss, this->param);
+	ss << "\r\n";
+	return ss.str();
 }
 
 // ostream& operator<<( ostream& out, Message m)
@@ -127,6 +127,6 @@ std::string Message::to_string() const {
 // }
 
 void Message::insert_param(std::size_t position, std::string const & param) {
-  this->param.insert(this->param.begin() + position, param);
+	this->param.insert(this->param.begin() + position, param);
 }
 

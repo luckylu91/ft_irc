@@ -8,8 +8,8 @@
 
 typedef std::vector<Client const *>::const_iterator client_iterator;
 void Channel::remove_client(Client * client) {
-  remove_from_vector(client, this->clients);
-  remove_from_vector(client, this->opers);
+	remove_from_vector(client, this->clients);
+	remove_from_vector(client, this->opers);
 }
 
 std::string Channel::op_cli_message() const {
@@ -30,13 +30,13 @@ std::string Channel::op_cli_message() const {
 }
 
 void Channel::forward_message(Client const * src, std::string const & content) const {
-  Message message;
-  message.set_source(src->name());
-  message.add_param(this->get_name());
-  message.add_param(content);
-  // for_each_in_vector<SendMessageToClient>
+	Message message;
+	message.set_source(src->name());
+	message.add_param(this->get_name());
+	message.add_param(content);
+	// for_each_in_vector<SendMessageToClient>
 }
 
 void SendMessageToClient::operator()(Message const & message, Client const * client) {
-  client->receive_message(message);
+	client->receive_message(message);
 }

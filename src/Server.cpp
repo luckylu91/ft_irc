@@ -8,6 +8,7 @@
 #include "numeric_codes.hpp"
 #include <unistd.h>
 #include <ctime>
+#include <cstdio>
 
 typedef std::vector<Client *>::const_iterator client_iterator;
 typedef std::vector<Channel *>::const_iterator channel_iterator;
@@ -20,24 +21,25 @@ Server::Server(std::string const & name, std::string const & version, std::strin
 	creation_time(time(0)) {}
 
 
-	Client * Server::find_client_by_sockfd(int sockfd) const {
-		return *find_in_vector<SameSockfd>(sockfd, this->clients);
-	}
+Client * Server::find_client_by_sockfd(int sockfd) const {
+	client_iterator it = find_in_vector<SameSockfd>(sockfd, this->clients);
+	if (it == this->clients.end())
+		throw NoSuchClientSockFdException(sockfd);
+	return *it;
+}
 
 Client * Server::find_client_by_nick(std::string const & nick) const {
-  client_iterator it = find_in_vector<SameNick>(nick, this->clients);
-  if (it != this->clients.end())
-    return *it;
-  else
-    return NULL;
+	client_iterator it = find_in_vector<SameNick>(nick, this->clients);
+	if (it == this->clients.end())
+		throw NoSuchClientNickException(nick);
+	return *it;
 }
 
 Channel * Server::find_channel_by_name(std::string const & name) const {
-  channel_iterator it = find_in_vector<SameChannelName>(name, this->channels);
-  if (it != this->channels.end())
-    return *it;
-  else
-    return NULL;
+	channel_iterator it = find_in_vector<SameChannelName>(name, this->channels);
+	if (it == this->channels.end())
+		throw NoSuchChannelNameException(name);
+	return *it;
 }
 
 void Server::new_client(int sockfd, struct sockaddr_in addr) {
@@ -47,11 +49,12 @@ void Server::new_client(int sockfd, struct sockaddr_in addr) {
 
 void Server::remove_client(Client * client) {
 	for_each_in_vector<RemoveClientFromChannel>(client, this->channels);
+	remove_from_vector(client, this->clients);
 }
 
 void Server::remove_client_sockfd(int sockfd) {
-  client_iterator it = find_in_vector<SameSockfd>(sockfd, this->clients);
-  this->clients.erase(it);
+	Client * client = this->find_client_by_sockfd(sockfd);
+	this->remove_client(client);
 }
 
 bool Server::try_password(std::string const & password) const {
@@ -60,10 +63,10 @@ bool Server::try_password(std::string const & password) const {
 
 void Server::send_message(Client const * client, Message const & message) const {
 	std::string message_str = message.to_string();
-	std::cout<<"debug dans cliend.cpp send message\n message = "<<message.to_string()<<std::endl;
+	// std::cout<<"debug dans cliend.cpp send message\n message = "<<message.to_string()<<std::endl;
 
 	int n = write(client->get_sockfd(), message_str.c_str(), message_str.size());
-	std::cout<<"debug dans send message string = "<<message_str.c_str()<<" n ="<<n<<std::endl;
+	// std::cout<<"debug dans send message string = "<<message_str.c_str()<<" n ="<<n<<std::endl;
 	if (n < 0)
 		throw ClientSocketWriteException(client);
 }
@@ -153,8 +156,8 @@ int Server::join_cmd(Client * c, std::string chan_name)
 	{
 		if ((*it)->get_name() == chan_name)
 		{
-      add_if_no_in(c, (*it)->get_clients());
-      add_if_no_in(*it, c->get_channels());
+			add_if_no_in(c, (*it)->get_clients());
+			add_if_no_in(*it, c->get_channels());
 			return 1;
 		}
 	}
@@ -171,25 +174,27 @@ int Server::join_cmd(Client * c, std::string chan_name)
 // ERR_NOSUCHNICK
 // RPL_AWAY
 void Server::privmsg(Client const * src, std::string const & msgtarget, std::string const & message) {
-  Client * dest_client = this->find_client_by_nick(msgtarget);
-  if (dest_client != NULL) {
-    src->send_message(dest_client, message);
-    return ;
-  }
-  Channel * dest_channel = this->find_channel_by_name(msgtarget);
-  if (dest_channel != NULL) {
-	  std::cout<<"debug dans privnessage channel message\n";
-    dest_channel->forward_message(src, message);// this->msg_channel(src, dest_channel, message);
-    return ;
-  }
-  this->err_nosuchnick(src, msgtarget);
+	try {
+		Client * dest_client = this->find_client_by_nick(msgtarget);
+		src->send_message(dest_client, message);
+	}
+	catch (NoSuchClientNickException &) {
+		try {
+			Channel * dest_channel = this->find_channel_by_name(msgtarget);
+			std::cout<<"debug dans privnessage channel message\n";
+			dest_channel->forward_message(src, message);// this->msg_channel(src, dest_channel, message);
+		}
+		catch (NoSuchChannelNameException &) {
+			this->err_nosuchnick(src, msgtarget);
+		}
+	}
 }
 
 void Server::welcome(Client const * client) const {
-  this->rpl_welcome(client);
-  this->rpl_yourhost(client);
-  this->rpl_created(client);
-  this->rpl_myinfo(client);
+	this->rpl_welcome(client);
+	this->rpl_yourhost(client);
+	this->rpl_created(client);
+	this->rpl_myinfo(client);
 }
 
 bool Server::nick_exists(std::string const & nick) const {
@@ -199,10 +204,10 @@ bool Server::nick_exists(std::string const & nick) const {
 
 
 Message Server::base_message(std::string const & command) const {
-  Message message;
-  message.set_source(this->name);
-  message.set_command(command);
-  return message;
+	Message message;
+	message.set_source(this->name);
+	message.set_command(command);
+	return message;
 }
 
 void Server::rpl_welcome(Client const * client) const {
@@ -251,34 +256,40 @@ void Server::rpl_namreply(Client const * client, Channel const * chan) const {
 // ERR
 void Server::err_needmoreparams(Client const * client, std::string const & command) const {
 	Message m = this->base_message(ERR_NEEDMOREPARAMS);
+	m.add_param(client->name());
 	m.add_param(command);
 	m.add_param("Not enough parameters");
 	this->send_message(client, m);
 }
 void Server::err_alreadyregistred(Client const * client) const {
 	Message m = this->base_message(ERR_ALREADYREGISTRED);
+	m.add_param(client->name());
 	m.add_param("Unauthorized command (already registered)");
 	this->send_message(client, m);
 }
 void Server::err_nonicknamegiven(Client const * client) const {
 	Message m = this->base_message(ERR_NONICKNAMEGIVEN);
+	m.add_param(client->name());
 	m.add_param("No nickname given");
 	this->send_message(client, m);
 }
 void Server::err_erroneusnickname(Client const * client, std::string const & nick) const {
 	Message m = this->base_message(ERR_ERRONEUSNICKNAME);
+	m.add_param(client->name());
 	m.add_param(nick);
 	m.add_param("Erroneous nickname");
 	this->send_message(client, m);
 }
 void Server::err_nicknameinuse(Client const * client, std::string const & nick) const {
 	Message m = this->base_message(ERR_NICKNAMEINUSE);
-  m.add_param(nick);
+	m.add_param(client->name());
+	m.add_param(nick);
 	m.add_param("Nickname is already in use");
 	this->send_message(client, m);
 }
 void Server::err_restricted(Client const * client) const {
 	Message m = this->base_message(ERR_RESTRICTED);
+	m.add_param(client->name());
 	m.add_param("Your connection is restricted!");
 	this->send_message(client, m);
 }
@@ -289,20 +300,23 @@ void Server::err_passwdmismatch(Client const * client) const {
 	this->send_message(client, m);
 }
 void Server::err_nosuchnick(Client const * client, std::string const & nick) const {
-  Message m = this->base_message(ERR_NOSUCHNICK);
-  m.add_param(nick);
-  m.add_param("No such nick/channel");
-  this->send_message(client, m);
+	Message m = this->base_message(ERR_NOSUCHNICK);
+	m.add_param(client->name());
+	m.add_param(nick);
+	m.add_param("No such nick/channel");
+	this->send_message(client, m);
 }
 
 void Server::err_norecipient(Client const * client, std::string const & command) const {
 	Message m = this->base_message(ERR_NORECIPIENT);
+	m.add_param(client->name());
 	m.add_param("No recipient given (" + command + ")");
 	this->send_message(client, m);
 }
 
 void Server::err_notexttosend(Client const * client) const {
 	Message m = this->base_message(ERR_NOTEXTTOSEND);
+	m.add_param(client->name());
 	m.add_param("No text to send");
 	this->send_message(client, m);
 }
@@ -319,7 +333,7 @@ bool SameSockfd::operator()(int sockfd, Client const * client) {
 }
 
 bool SameChannelName::operator()(std::string const & name, Channel const * channel) {
-  return name == channel->get_name();
+	return name == channel->get_name();
 }
 
 void RemoveClientFromChannel::operator()(Client * client, Channel * channel) {
