@@ -61,6 +61,7 @@ bool Server::try_password(Client const * client, std::string const & password) c
 void Server::send_message(Client const * client, Message const & message) const {
 	std::string message_str = message.to_string();
 	std::cout<<"debug dans cliend.cpp send message\n message = "<<message.to_string()<<std::endl;
+
 	int n = write(client->get_sockfd(), message_str.c_str(), message_str.size());
 	std::cout<<"debug dans send message string = "<<message_str.c_str()<<" n ="<<n<<std::endl;
 	if (n < 0)
@@ -69,6 +70,7 @@ void Server::send_message(Client const * client, Message const & message) const 
 
 void Server::receive_message(int sockfd, Message const & message) {
 	Client * client = this->find_client_by_sockfd(sockfd);
+	std::cout<<"IN JOIN 1\n";
 	if (message.get_command() == "NICK") {
 		if (message.get_param().size() == 0) {
 			this->err_nonicknamegiven(client);
@@ -90,19 +92,38 @@ void Server::receive_message(int sockfd, Message const & message) {
 	}
 
 	else if (message.get_command() == "JOIN") {
+
+	std::cout<<"IN JOIN 2\n";
 		std::string temp = (message.get_param())[0];
 		std::string chan_name;
 		size_t f;
 		while(!temp.empty())
 		{
+	std::cout<<"IN JOIN 3\n";
 			f = temp.find(',');
-			chan_name = temp.substr(f);
+
+	std::cout<<"IN JOIN 4\n";
+
+	std::cout<<"IN JOIN 3.4\n";
 			if (f != std::string::npos)
+			{
+	std::cout<<"IN JOIN 3.3\n";
+
+				chan_name = temp.substr(f);
 				temp.erase(f+1);
+			}
 			else
-				temp.erase(f);
+			{	
+	std::cout<<"IN JOIN 4 "<<temp<<"\n";
+				chan_name = temp;
+				temp.clear();
+
+	std::cout<<"IN JOIN 4.4\n";
+			}
 			if(	join_cmd(client,chan_name))
 			{
+
+	std::cout<<"IN JOIN 5\n";
 				rpl_join(client,find_channel_by_name(chan_name));
 				rpl_notopic(client,find_channel_by_name(chan_name));
 				rpl_namreply(client,find_channel_by_name(chan_name));
@@ -112,6 +133,8 @@ void Server::receive_message(int sockfd, Message const & message) {
 				//bug creating chan
 				std::cout<<"Bug creating chan\n";
 			}
+			
+	std::cout<<"IN JOIN 6\n";
 		}
 
 	}
@@ -132,7 +155,7 @@ int Server::join_cmd(Client * c, std::string chan_name)
 		{
       add_if_no_in(c, (*it)->get_clients());
       add_if_no_in(*it, c->get_channels());
-			return 0;
+			return 1;
 		}
 	}
 	channels.push_back(new Channel(*this, chan_name,c));
@@ -155,6 +178,7 @@ void Server::privmsg(Client const * src, std::string const & msgtarget, std::str
   }
   Channel * dest_channel = this->find_channel_by_name(msgtarget);
   if (dest_channel != NULL) {
+	  std::cout<<"debug dans privnessage channel message\n";
     dest_channel->forward_message(src, message);// this->msg_channel(src, dest_channel, message);
     return ;
   }
@@ -212,11 +236,16 @@ void Server::rpl_join(Client const * client, Channel const * chan) const {
 void Server::rpl_notopic(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(RPL_NOTOPIC);
 	m.add_param(chan->get_name());
+	m.add_param(":No topic is set\r\n");
 	this->send_message(client, m);
 }
 void Server::rpl_namreply(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(RPL_NAMREPLY);
+	m.add_param(client->get_nick());
+	m.add_param("=");
+	m.add_param(chan->get_name());
 	m.add_param(chan->op_cli_message());
+	std::cout<<"debug rpl_namreply ="<<m.to_string()<<std::endl;
 	this->send_message(client, m);
 }
 // ERR
