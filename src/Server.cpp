@@ -40,14 +40,6 @@ Channel * Server::find_channel_by_name(std::string const & name) const {
     return NULL;
 }
 
-// Client * find_client_by_addr(struct sockaddr_in addr) {
-
-// }
-
-// Client * find_client_by_nick(std::string const & nick) {
-
-// }
-
 void Server::new_client(int sockfd, struct sockaddr_in addr) {
 	Client * client = new Client(sockfd, addr, *this);
 	this->clients.push_back(client);
@@ -129,7 +121,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 		if (message.get_param().size() == 1)
 		return this->err_notexttosend(client);
 		this->privmsg(client, message.get_param()[0], message.get_param()[1]);
-  	}
+	}
 }
 
 int Server::join_cmd(Client * c, std::string chan_name)
