@@ -8,12 +8,13 @@ f.close()
 
 f = open('include/numeric_out.hpp', 'w')
 
-f.write("#pragme once\n")
+f.write("#pragma once\n")
 
 in_quotes = False
 in_code = False
 out_code = False
 new_out_code = False
+quote_line = ""
 
 for line in lines:
 	if len(line.strip()) == 0:
@@ -21,40 +22,17 @@ for line in lines:
 	m = re.match(code_patt, line)
 	if m:
 		f.write("\n")
-		if out_code:
-			out_code = False
-		in_code = True
+		in_comment = False
+		just_after_code = True
 		code = m.group(1)
 		name = m.group(2)
 		f.write(f"#define {name} \"{code}\"\n")
 
-	elif in_code:
-		if not in_quotes:
-			full_line = line.strip()
-			num_quotes = line.count("\"")
-			if num_quotes % 2 == 0:
-				f.write(f"// {full_line}\n")
-				in_code = False
-				new_out_code = True
-			else:
-				in_quotes = True
-		else:
-			full_line += " " + line.strip()
-			num_quotes = line.count("\"")
-			if num_quotes % 2 != 0:
-				f.write(f"// {full_line}\n")
-				in_quotes = False
-				in_code = False
-				new_out_code = True
-
 	else:
-		if new_out_code:
-			new_out_code = False
-			out_code = True
-		full_line = "// " + line.strip() + "\n"
-		f.write(full_line)
-
-
-
-
-
+		in_comment = True
+		if line.strip().startswith("-"):
+			just_after_code = False
+		if just_after_code or line.strip().startswith("-"):
+			f.write("// " + line.strip() + "\n")
+		else :
+			f.write("//   " + line.strip() + "\n")
