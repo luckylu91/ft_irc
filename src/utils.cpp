@@ -10,11 +10,26 @@ std::string addr_string(struct sockaddr_in addr) {
 	return ss.str();
 }
 
-std::size_t ft_strlen(char const * s) {
-	std::size_t i = 0;
-	while (*s) {
-		i++;
-		s++;
+std::string special_string(std::string const & s) {
+	std::size_t i;
+	std::stringstream ss;
+
+	for (i = 0; i < s.size(); i++) {
+		if (!std::isspace(s[i]) || s[i] == ' ')
+			ss << s[i];
+		else {
+			if (s[i] == '\f')
+				ss << "\\f";
+			else if (s[i] == '\n')
+				ss << "\\n";
+			else if (s[i] == '\r')
+				ss << "\\r";
+			else if (s[i] == '\t')
+				ss << "\\t";
+			else if (s[i] == '\v')
+				ss << "\\v";
+		}
 	}
-	return i;
+	return ss.str();
 }
+

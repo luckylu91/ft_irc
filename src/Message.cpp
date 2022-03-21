@@ -28,12 +28,14 @@ void Message::parse(std::string input, std::vector<Message> *vec) {
 	while (input.size() > 0) {
 		i = input.find("\r\n", 0);
 		if (i == std::string::npos) {
-			// throw ....;
-			std::cout << "Error in Message::parse" << std::endl;
+			// TO FIX : message can be split in several paquets
+			std::cout << "Error in Message::parse: \\r\\n not found" << std::endl;
 			return ;
 		}
-		message = Message::parse_one(input.substr(0, i));
-		vec->push_back(message);
+		else if (i > 0) {
+			message = Message::parse_one(input.substr(0, i));
+			vec->push_back(message);
+		}
 		input = input.substr(i + 2, std::string::npos);
 	}
 }
@@ -122,20 +124,13 @@ static void insert_params_to_stream(std::stringstream & ss, std::vector<std::str
 }
 
 
-std::string Message::to_string_striped() const {
+std::string Message::to_string() const {
 	std::stringstream ss;
 
 	if (this->source_is_set)
 		ss << ":" << this->source << " ";
 	ss << this->command;
 	insert_params_to_stream(ss, this->param);
-	return ss.str();
-}
-
-std::string Message::to_string() const {
-	std::stringstream ss;
-
-	ss << this->to_string_striped();
 	ss << "\r\n";
 	return ss.str();
 }

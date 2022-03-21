@@ -13,6 +13,7 @@
 #include <signal.h>
 
 #include "main_utils.hpp"
+#include "utils.hpp"
 #include "Message.hpp"
 #include "Server.hpp"
 
@@ -100,7 +101,7 @@ int main(int, char *argv[])
 
 				// printf("troisieme if 3 \n");
 				// printf("Here is the message: %s\n",buffer);
-				// special_print(std::string() + "Here is the message: " + buffer);
+				// std::cout << special_string(std::string() + "Here is the message: " + buffer) << std::endl;
 				// Message m = Message::parse(buffer);
 				int client_sockfd = static_cast<int>(tevent.ident);
 				Message::parse(buffer, &vec);
@@ -109,7 +110,7 @@ int main(int, char *argv[])
 				for (std::vector<Message>::iterator it = vec.begin(); it != vec.end(); it++)
 				{
 					// std::cout<<"message : "<<it->to_string()<<std::endl;
-					// special_print(std::string() + "message : " + it->to_string());
+					// std::cout << special_string(std::string() + "message : " + it->to_string()) << std::endl;
 					server.receive_message(client_sockfd, *it);
 				}
 			}

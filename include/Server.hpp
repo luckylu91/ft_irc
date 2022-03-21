@@ -43,6 +43,7 @@ public:
 	void rpl_join(Client const * client, Channel const * chan) const;
 	void rpl_notopic(Client const * client, Channel const * chan) const;
 	void rpl_namreply(Client const * client, Channel const * chan) const;
+	void rpl_endofnames(Client const * client, Channel const * chan) const;
 
 	//pong
 	void rpl_pong(Client const * client) const;

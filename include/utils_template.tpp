@@ -38,6 +38,11 @@ bool is_in_vector(A const & a, Vector const & vec) {
 	return find_in_vector<Compare, A, Vector>(a, vec) != vec.end();
 }
 
+template <class A, class Vector>
+bool is_in_vector(A const & a, Vector const & vec) {
+	return std::find(vec.begin(), vec.end(), a) != vec.end();
+}
+
 template <class Action, class A, class Vector>
 void for_each_in_vector(A & a, Vector & vec) {
 	ParametrizedUnaryFunction<A, typename Vector::value_type, Action, void> act_on_a(a);
@@ -46,7 +51,15 @@ void for_each_in_vector(A & a, Vector & vec) {
 		vec.end(),
 		act_on_a
 	);
-
+}
+template <class Action, class A, class Vector>
+void for_each_in_vector(A & a, Vector const & vec) {
+	ParametrizedUnaryFunction<A, const typename Vector::value_type, Action, void> act_on_a(a);
+	std::for_each(
+		vec.begin(),
+		vec.end(),
+		act_on_a
+	);
 }
 
 template <class A, class Vector>

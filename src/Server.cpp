@@ -66,7 +66,7 @@ bool Server::try_password(std::string const & password) const {
 
 void Server::send_message(Client const * client, Message const & message) const {
 	std::string message_str = message.to_string();
-	std::cout << "Sending message '" << message.to_string_striped() << "'" << std::endl;
+	std::cout << "Sending message '" << special_string(message.to_string()) << "'" << std::endl;
 	// std::cout<<"debug dans cliend.cpp send message\n message = "<<message.to_string()<<std::endl;
 
 	int n = write(client->get_sockfd(), message_str.c_str(), message_str.size());
@@ -77,7 +77,7 @@ void Server::send_message(Client const * client, Message const & message) const 
 
 void Server::receive_message(int sockfd, Message const & message) {
 	Client * client = this->find_client_by_sockfd(sockfd);
-	std::cout << "Received message '" << message.to_string_striped() << "'" << std::endl;
+	std::cout << "Received message '" << special_string(message.to_string()) << "'" << std::endl;
 	// std::cout<<"IN receive_message\n";
 	if (message.get_command() == "NICK") {
 		if (message.get_param().size() == 0)
@@ -131,9 +131,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 				continue ;
 			}
 			join_cmd(client, chan_name);
-			rpl_join(client,find_channel_by_name(chan_name));
-			rpl_notopic(client,find_channel_by_name(chan_name));
-			rpl_namreply(client,find_channel_by_name(chan_name));
+
 // 			if(	join_cmd(client,chan_name))
 // 			{
 
@@ -167,13 +165,23 @@ void Server::receive_message(int sockfd, Message const & message) {
 
 void Server::join_cmd(Client * client, std::string chan_name)
 {
+	Channel * channel;
+	bool already_in_channel = false;
 	try {
-		Channel * channel = this->find_channel_by_name(chan_name);
+		channel = this->find_channel_by_name(chan_name);
+		already_in_channel = channel->contains_client(client);
 		add_if_no_in(client, channel->get_clients());
 		add_if_no_in(channel, client->get_channels());
 	}
-	catch (NoSuchClientException &) {
-		channels.push_back(new Channel(*this, chan_name, client));
+	catch (NoSuchChannelNameException &) {
+		channel = new Channel(*this, chan_name, client);
+		channels.push_back(channel);
+	}
+	if (!already_in_channel) {
+		this->rpl_join(client, channel);
+		this->rpl_notopic(client, channel);
+		this->rpl_namreply(client, channel);
+		this->rpl_endofnames(client, channel);
 	}
 	// for(std::vector<Channel *>::iterator it = channels.begin(); it != channels.end();it++)
 	// {
@@ -204,7 +212,7 @@ void Server::privmsg(Client const * src, std::string const & msgtarget, std::str
 	catch (NoSuchClientNickException &) {
 		try {
 			Channel * dest_channel = this->find_channel_by_name(msgtarget);
-			std::cout<<"debug dans privnessage channel message\n";
+			// std::cout<<"debug dans privnessage channel message\n";
 			dest_channel->forward_message(src, message);// this->msg_channel(src, dest_channel, message);
 		}
 		catch (NoSuchChannelNameException &) {
@@ -271,15 +279,22 @@ void Server::rpl_join(Client const * client, Channel const * chan) const {
 void Server::rpl_notopic(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(client, RPL_NOTOPIC);
 	m.add_param(chan->get_name());
-	m.add_param(":No topic is set\r\n");
+	m.add_param(":No topic is set");
 	this->send_message(client, m);
 }
 void Server::rpl_namreply(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(client, RPL_NAMREPLY);
-	m.add_param("=");
+	m.add_param("@");
 	m.add_param(chan->get_name());
 	m.add_param(chan->op_cli_message());
-	std::cout<<"debug rpl_namreply ="<<m.to_string()<<std::endl;
+	// std::cout<<"debug rpl_namreply ="<<m.to_string()<<std::endl;
+	this->send_message(client, m);
+}
+
+void Server::rpl_endofnames(Client const * client, Channel const * chan) const {
+	Message m = this->base_message(client, RPL_ENDOFNAMES);
+	m.add_param(chan->get_name());
+	m.add_param("End of NAMES list");
 	this->send_message(client, m);
 }
 
