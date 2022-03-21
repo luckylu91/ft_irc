@@ -9,39 +9,15 @@
 #include <sys/event.h>
 #include <err.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+
+#include "main_utils.hpp"
 #include "Message.hpp"
 #include "Server.hpp"
 
-static void special_print(std::string const & s) {
-	std::size_t i;
+int sockfd = -1;
 
-	for (i = 0; i < s.size(); i++) {
-		if (!std::isspace(s[i]) || s[i] == ' ')
-			std::cout << s[i];
-		else {
-			if (s[i] == '\f')
-				std::cout << "\\f";
-			else if (s[i] == '\n')
-				std::cout << "\\n";
-			else if (s[i] == '\r')
-				std::cout << "\\r";
-			else if (s[i] == '\t')
-				std::cout << "\\t";
-			else if (s[i] == '\v')
-				std::cout << "\\v";
-		}
-	}
-	std::cout << std::endl;
-}
-
-void error(const char *msg)
-{
-	perror(msg);
-	exit(0);
-}
 int main(int, char *argv[])
 {
 	struct	kevent event;	 /* Event we want to monitor */
@@ -49,14 +25,18 @@ int main(int, char *argv[])
 
 	struct	kevent tevent;
 	std::vector<Message> vec;
-	int sockfd, newsockfd, portno, clilen, n, kq, ret;
+	int newsockfd, portno, clilen, n, kq, ret;
 
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 
 	Server server("LE_SERVER", "0.1", "root");
 
+	signal(SIGINT, &sig_handler);
+
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	int option = 1;
+	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
 	printf("sockfd = %i\n",sockfd);
 	if (sockfd < 0)
 		error("ERROR opening socket");
@@ -124,6 +104,7 @@ int main(int, char *argv[])
 				// Message m = Message::parse(buffer);
 				int cli_sockfd = static_cast<int>(tevent.ident);
 				Message::parse(buffer,&vec);
+				debug_message_vec(vec);
 
 				printf("taille de size %lu\n",vec.size());
 				for (std::vector<Message>::iterator it = vec.begin(); it != vec.end(); it++)

@@ -73,28 +73,26 @@ void Server::send_message(Client const * client, Message const & message) const 
 
 void Server::receive_message(int sockfd, Message const & message) {
 	Client * client = this->find_client_by_sockfd(sockfd);
-	std::cout<<"IN JOIN 1\n";
+	std::cout<<"IN receive_message\n";
 	if (message.get_command() == "NICK") {
-		if (message.get_param().size() == 0) {
-			this->err_nonicknamegiven(client);
-		}
-		std::cout<<"debug dans recerive avant set_nic\n";
+		if (message.get_param().size() == 0)
+			return this->err_nonicknamegiven(client);
 		client->set_nick(message.get_param()[0]);
 	}
 	else if (message.get_command() == "USER") {
-		if (message.get_param().size() < 4) {
-			this->err_needmoreparams(client, "USER");
-		}
+		if (message.get_param().size() < 4)
+			return this->err_needmoreparams(client, "USER");
 		client->set_user(message.get_param()[0], message.get_param()[3]);
 	}
 	else if (message.get_command() == "PASS") {
-		if (message.get_param().size() == 0) {
-			this->err_needmoreparams(client, "PASS");
-		}
+		if (message.get_param().size() == 0)
+			return this->err_needmoreparams(client, "PASS");
 		client->set_password(message.get_param()[0]);
 	}
 
 	else if (message.get_command() == "JOIN") {
+		if (message.get_param().size() == 0)
+			return this->err_needmoreparams(client, "JOIN");
 
 	std::cout<<"IN JOIN 2\n";
 		std::string temp = (message.get_param())[0];
@@ -143,9 +141,9 @@ void Server::receive_message(int sockfd, Message const & message) {
 	}
 	else if (message.get_command() == "PRIVMSG") {
 		if (message.get_param().size() == 0)
-		return this->err_norecipient(client, "PRIVMSG");
+			return this->err_norecipient(client, "PRIVMSG");
 		if (message.get_param().size() == 1)
-		return this->err_notexttosend(client);
+			return this->err_notexttosend(client);
 		this->privmsg(client, message.get_param()[0], message.get_param()[1]);
 	}
 }

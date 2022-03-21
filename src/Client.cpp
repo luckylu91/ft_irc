@@ -51,24 +51,25 @@ Client::Client(int sockfd, struct sockaddr_in addr, Server & server):
 void Client::set_password(std::string const & password) {
 	std::cout << "SET_PASSWORD" << std::endl;
 	if (this->is_registered()) {
-		this->server.err_alreadyregistred(this);
+		return this->server.err_alreadyregistred(this);
 	}
 	if (this->server.try_password(password)) {
 		this->is_identified = true;
 	}
 	else {
 		this->is_identified = false;
-		this->server.err_passwdmismatch(this);
+		return this->server.err_passwdmismatch(this);
 	}
 }
 
 void Client::set_user(std::string const & user_name, std::string const & real_name) {
 	std::cout << "SET_USER" << std::endl;
+	std::cout << "debug: user_name = " << user_name << ", real_name = " << real_name << std::endl;
 	if (!this->is_identified && this->is_nick) {
-		this->server.err_passwdmismatch(this);
+		return this->server.err_passwdmismatch(this);
 	}
 	if (this->is_registered()) {
-		this->server.err_alreadyregistred(this);
+		return this->server.err_alreadyregistred(this);
 	}
 	this->user_name = user_name;
 	this->real_name = real_name;
@@ -84,16 +85,16 @@ void Client::set_user(std::string const & user_name, std::string const & real_na
 void Client::set_nick(std::string const & nick) {
 	std::cout << "SET_NICK" << std::endl;
 	if (!this->is_identified && this->is_user) {
-		this->server.err_passwdmismatch(this);
+		return this->server.err_passwdmismatch(this);
 	}
 	if (invalid_nick(nick)) {
 		std::cout << "INVALIDE NICK" << std::endl;
 		std::cout << "nick = " << nick << std::endl;
-		this->server.err_erroneusnickname(this, nick);
+		return this->server.err_erroneusnickname(this, nick);
 	}
 	if (this->server.nick_exists(nick)) {
 		std::cout << "NICK EXISTS" << std::endl;
-		this->server.err_nicknameinuse(this, nick);
+		return this->server.err_nicknameinuse(this, nick);
 	}
 	this->nick = nick;
 

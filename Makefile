@@ -9,17 +9,19 @@ all: $(NAME)
 $(NAME): $(OBJS) | $(HEADERS)
 	g++ -o $@ $^ $(CFLAGS)
 
-obj/%.o: src/%.cpp | obj/
+obj/%.o: src/%.cpp | obj
 	g++ -c -o $@ $^ $(CFLAGS)
 
-obj/:
+obj:
 	mkdir obj/
 
 clean:
 	rm -rf obj/
 
 fclean: clean
-	rm $(NAME)
+	rm -f $(NAME)
+
+re: fclean all
 
 echo:
 	@echo "SRCS = $(wildcard src/*.cpp)"
@@ -28,4 +30,4 @@ echo:
 	@echo "NAME = ft_irc"
 	@echo "CFLAGS = -Iinclude -Wall -Wextra -Werror -std=c++98"
 
-.PHONY: all, clean, fclean
+.PHONY: all clean fclean re

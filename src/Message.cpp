@@ -21,34 +21,51 @@ void Message::add_param(std::string const & param) {
 	this->param.push_back(param);
 }
 
-void Message::parse(char *base, std::vector<Message> *vec)
-{
-	std::string temp = base;
-	std::size_t start =0;
-	std::size_t end = 1;
-	// printf("parse de = |%s| \n",base);
-	while (end!=std::string::npos)
-	{
+void Message::parse(std::string input, std::vector<Message> *vec) {
+	std::size_t i = 0;
+	Message message;
 
-	// printf("in while= |%s| \n",&temp[start]);
-		end = temp.find("\r\n",start);
-		if (end == std::string::npos)
-		{
-		// printf("ici 1 \n");
-			return;
-			// vec.push_back(parse_one(temp.substr(start)));
+	while (input.size() > 0) {
+		i = input.find("\r\n", 0);
+		if (i == std::string::npos) {
+			// throw ....;
+			std::cout << "Error in Message::parse" << std::endl;
+			return ;
 		}
-		else
-		{
-		// printf("ici 2 \n");
-		vec->push_back(parse_one(temp.substr(start,end)));
-
-		// printf("taille de vec in parse %i\n",vec->size());
-		start = end+2;
-		}
+		message = Message::parse_one(input.substr(0, i));
+		vec->push_back(message);
+		input = input.substr(i + 2, std::string::npos);
 	}
-
 }
+
+// void Message::parse(char *base, std::vector<Message> *vec)
+// {
+// 	std::string temp = base;
+// 	std::size_t start =0;
+// 	std::size_t end = 1;
+// 	// printf("parse de = |%s| \n",base);
+// 	while (end!=std::string::npos)
+// 	{
+
+// 	// printf("in while= |%s| \n",&temp[start]);
+// 		end = temp.find("\r\n",start);
+// 		if (end == std::string::npos)
+// 		{
+// 		// printf("ici 1 \n");
+// 			return;
+// 			// vec.push_back(parse_one(temp.substr(start)));
+// 		}
+// 		else
+// 		{
+// 		// printf("ici 2 \n");
+// 		vec->push_back(parse_one(temp.substr(start,end)));
+
+// 		// printf("taille de vec in parse %i\n",vec->size());
+// 		start = end+2;
+// 		}
+// 	}
+
+// }
 
 
 Message Message::parse_one(std::string s)
