@@ -27,18 +27,26 @@ public:
 	void welcome(Client const * client) const;
 	void privmsg(Client const * source, std::string const & msgtarget, std::string const & message);
 	void msg_channel(Client const * src, Channel const * dest, std::string const & message) const;
+	void join_cmd(Client * c, std::string chan_name);
 
+	// Numeric responses
 	Message base_message(std::string const & command) const;
+
+	// registation
 	void rpl_welcome(Client const * client) const;
 	void rpl_yourhost(Client const * client) const;
 	void rpl_created(Client const * client) const;
 	void rpl_myinfo(Client const * client) const;
+
 	//join
-void rpl_join(Client const * client, Channel const * chan) const;
+	void rpl_join(Client const * client, Channel const * chan) const;
+	void rpl_notopic(Client const * client, Channel const * chan) const;
+	void rpl_namreply(Client const * client, Channel const * chan) const;
 
-void rpl_notopic(Client const * client, Channel const * chan) const;
-void rpl_namreply(Client const * client, Channel const * chan) const ;
+	//pong
+	void rpl_pong(Client const * client) const;
 
+	// errors
 	void err_needmoreparams(Client const * client, std::string const & command) const;
 	void err_alreadyregistred(Client const * client) const;
 	void err_nonicknamegiven(Client const * client) const;
@@ -50,15 +58,16 @@ void rpl_namreply(Client const * client, Channel const * chan) const ;
 	void err_nosuchnick(Client const * client, std::string const & nick) const;
 	void err_norecipient(Client const * client, std::string const & command) const;
 	void err_notexttosend(Client const * client) const;
+	void err_nosuchchannel(Client const * client, std::string const & channel_name) const;
 
-	int join_cmd(Client * c, std::string chan_name);
+
 private:
 	std::string name;
 	std::string version;
 	std::string password;
 	std::vector<Client *> clients;
 	std::vector<Channel *> channels;
-	time_t creation_time;
+	std::string creation_time_string;
 };
 
 struct SameNick {
@@ -79,15 +88,15 @@ struct RemoveClientFromChannel {
 
 
 // ERR_NEEDMOREPARAMS
-
 // ERR_BADCHANNELKEY
-// ERR_CHANNELISFULL
-// ERR_BADCHANMASK
 // ERR_NOSUCHCHANNEL
-// ERR_TOOMANYCHANNELS
-// ERR_TOOMANYTARGETS
-// ERR_UNAVAILRESOURCE
+
 // RPL_TOPIC
 
 // ERR_BANNEDFROMCHAN
 // ERR_INVITEONLYCHAN
+// ERR_CHANNELISFULL
+// ERR_BADCHANMASK
+// ERR_TOOMANYCHANNELS
+// ERR_TOOMANYTARGETS
+// ERR_UNAVAILRESOURCE

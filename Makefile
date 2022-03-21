@@ -23,11 +23,4 @@ fclean: clean
 
 re: fclean all
 
-echo:
-	@echo "SRCS = $(wildcard src/*.cpp)"
-	@echo "HEADERS = $(wildcard include/*.hpp)"
-	@echo "OBJS = $(SRCS:src/%.cpp=obj/%.o)"
-	@echo "NAME = ft_irc"
-	@echo "CFLAGS = -Iinclude -Wall -Wextra -Werror -std=c++98"
-
 .PHONY: all clean fclean re

@@ -17,8 +17,11 @@ Server::Server(std::string const & name, std::string const & version, std::strin
 	name(name),
 	version(version),
 	password(password),
-	clients(),
-	creation_time(time(0)) {}
+	clients() {
+		time_t timestamp = time(NULL);
+		this->creation_time_string = ctime(&timestamp);
+		this->creation_time_string.erase(this->creation_time_string.find_last_not_of("\n") + 1);
+	}
 
 
 Client * Server::find_client_by_sockfd(int sockfd) const {
@@ -63,6 +66,7 @@ bool Server::try_password(std::string const & password) const {
 
 void Server::send_message(Client const * client, Message const & message) const {
 	std::string message_str = message.to_string();
+	std::cout << "Sending message '" << message.to_string_striped() << "'" << std::endl;
 	// std::cout<<"debug dans cliend.cpp send message\n message = "<<message.to_string()<<std::endl;
 
 	int n = write(client->get_sockfd(), message_str.c_str(), message_str.size());
@@ -73,7 +77,8 @@ void Server::send_message(Client const * client, Message const & message) const 
 
 void Server::receive_message(int sockfd, Message const & message) {
 	Client * client = this->find_client_by_sockfd(sockfd);
-	std::cout<<"IN receive_message\n";
+	std::cout << "Received message '" << message.to_string_striped() << "'" << std::endl;
+	// std::cout<<"IN receive_message\n";
 	if (message.get_command() == "NICK") {
 		if (message.get_param().size() == 0)
 			return this->err_nonicknamegiven(client);
@@ -94,48 +99,56 @@ void Server::receive_message(int sockfd, Message const & message) {
 		if (message.get_param().size() == 0)
 			return this->err_needmoreparams(client, "JOIN");
 
-	std::cout<<"IN JOIN 2\n";
+//	std::cout<<"IN JOIN 2\n";
 		std::string temp = (message.get_param())[0];
 		std::string chan_name;
 		size_t f;
 		while(!temp.empty())
 		{
-	std::cout<<"IN JOIN 3\n";
+//	std::cout<<"IN JOIN 3\n";
 			f = temp.find(',');
 
-	std::cout<<"IN JOIN 4\n";
+//	std::cout<<"IN JOIN 4\n";
 
-	std::cout<<"IN JOIN 3.4\n";
+//	std::cout<<"IN JOIN 3.4\n";
 			if (f != std::string::npos)
 			{
-	std::cout<<"IN JOIN 3.3\n";
+//	std::cout<<"IN JOIN 3.3\n";
 
 				chan_name = temp.substr(f);
 				temp.erase(f+1);
 			}
 			else
 			{
-	std::cout<<"IN JOIN 4 "<<temp<<"\n";
+//	std::cout<<"IN JOIN 4 "<<temp<<"\n";
 				chan_name = temp;
 				temp.clear();
 
-	std::cout<<"IN JOIN 4.4\n";
+//	std::cout<<"IN JOIN 4.4\n";
 			}
-			if(	join_cmd(client,chan_name))
-			{
+			if (Channel::invalid_channel_name(chan_name)) {
+				this->err_nosuchchannel(client, chan_name);
+				continue ;
+			}
+			join_cmd(client, chan_name);
+			rpl_join(client,find_channel_by_name(chan_name));
+			rpl_notopic(client,find_channel_by_name(chan_name));
+			rpl_namreply(client,find_channel_by_name(chan_name));
+// 			if(	join_cmd(client,chan_name))
+// 			{
 
-	std::cout<<"IN JOIN 5\n";
-				rpl_join(client,find_channel_by_name(chan_name));
-				rpl_notopic(client,find_channel_by_name(chan_name));
-				rpl_namreply(client,find_channel_by_name(chan_name));
-			}
-			else
-			{
-				//bug creating chan
-				std::cout<<"Bug creating chan\n";
-			}
+// //	std::cout<<"IN JOIN 5\n";
+// 				rpl_join(client,find_channel_by_name(chan_name));
+// 				rpl_notopic(client,find_channel_by_name(chan_name));
+// 				rpl_namreply(client,find_channel_by_name(chan_name));
+// 			}
+// 			else
+// 			{
+// 				//bug creating chan
+// 				std::cout<<"Bug creating chan\n";
+// 			}
 
-	std::cout<<"IN JOIN 6\n";
+//	std::cout<<"IN JOIN 6\n";
 		}
 
 	}
@@ -146,21 +159,33 @@ void Server::receive_message(int sockfd, Message const & message) {
 			return this->err_notexttosend(client);
 		this->privmsg(client, message.get_param()[0], message.get_param()[1]);
 	}
+	else if (message.get_command() == "PING") {
+		// ...
+		this->rpl_pong(client);
+	}
 }
 
-int Server::join_cmd(Client * c, std::string chan_name)
+void Server::join_cmd(Client * client, std::string chan_name)
 {
-	for(std::vector<Channel *>::iterator it = channels.begin(); it != channels.end();it++)
-	{
-		if ((*it)->get_name() == chan_name)
-		{
-			add_if_no_in(c, (*it)->get_clients());
-			add_if_no_in(*it, c->get_channels());
-			return 1;
-		}
+	try {
+		Channel * channel = this->find_channel_by_name(chan_name);
+		add_if_no_in(client, channel->get_clients());
+		add_if_no_in(channel, client->get_channels());
 	}
-	channels.push_back(new Channel(*this, chan_name,c));
-	return 1;
+	catch (NoSuchClientException &) {
+		channels.push_back(new Channel(*this, chan_name, client));
+	}
+	// for(std::vector<Channel *>::iterator it = channels.begin(); it != channels.end();it++)
+	// {
+	// 	if ((*it)->get_name() == chan_name)
+	// 	{
+	// 		add_if_no_in(client, (*it)->get_clients());
+	// 		add_if_no_in(*it, client->get_channels());
+	// 		return 1;
+	// 	}
+	// }
+	// channels.push_back(new Channel(*this, chan_name,client));
+	// return 1;
 }
 
 // ERR_NORECIPIENT
@@ -200,7 +225,6 @@ bool Server::nick_exists(std::string const & nick) const {
 	return (it != this->clients.end());
 }
 
-
 Message Server::base_message(std::string const & command) const {
 	Message message;
 	message.set_source(this->name);
@@ -221,7 +245,7 @@ void Server::rpl_yourhost(Client const * client) const {
 }
 void Server::rpl_created(Client const * client) const {
 	Message m = this->base_message(RPL_CREATED);
-	m.add_param("This server was created " + std::string(ctime(&this->creation_time)));
+	m.add_param("This server was created " + this->creation_time_string);
 	this->send_message(client, m);
 }
 void Server::rpl_myinfo(Client const * client) const {
@@ -229,6 +253,7 @@ void Server::rpl_myinfo(Client const * client) const {
 	m.add_param(this->name + " " + this->version); // + "<available user modes> <available channel modes>");
 	this->send_message(client, m);
 }
+
 //RPL JOIN
 
 void Server::rpl_join(Client const * client, Channel const * chan) const {
@@ -251,7 +276,18 @@ void Server::rpl_namreply(Client const * client, Channel const * chan) const {
 	std::cout<<"debug rpl_namreply ="<<m.to_string()<<std::endl;
 	this->send_message(client, m);
 }
+
+// RPL PONG
+
+void Server::rpl_pong(Client const * client) const {
+	Message m = this->base_message("PONG");
+	m.add_param(this->name);
+	m.add_param(client->name());
+	this->send_message(client, m);
+}
+
 // ERR
+
 void Server::err_needmoreparams(Client const * client, std::string const & command) const {
 	Message m = this->base_message(ERR_NEEDMOREPARAMS);
 	m.add_param(client->name());
@@ -319,7 +355,13 @@ void Server::err_notexttosend(Client const * client) const {
 	this->send_message(client, m);
 }
 
-
+void Server::err_nosuchchannel(Client const * client, std::string const & channel_name) const {
+	Message m = this->base_message(ERR_NOSUCHCHANNEL);
+	// m.add_param(client->name());
+	m.add_param(channel_name);
+	m.add_param("No such channel");
+	this->send_message(client, m);
+}
 
 
 bool SameNick::operator()(std::string const & nick, Client const * client) {

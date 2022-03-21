@@ -121,13 +121,21 @@ static void insert_params_to_stream(std::stringstream & ss, std::vector<std::str
 	ss << *it_last;
 }
 
-std::string Message::to_string() const {
+
+std::string Message::to_string_striped() const {
 	std::stringstream ss;
 
 	if (this->source_is_set)
 		ss << ":" << this->source << " ";
 	ss << this->command;
 	insert_params_to_stream(ss, this->param);
+	return ss.str();
+}
+
+std::string Message::to_string() const {
+	std::stringstream ss;
+
+	ss << this->to_string_striped();
 	ss << "\r\n";
 	return ss.str();
 }

@@ -6,6 +6,28 @@
 #include <algorithm>
 #include <iostream>
 
+/*
+Channels names are strings (beginning with a '&' or '#' character) of
+   length up to 200 characters.  Apart from the the requirement that the
+   first character being either '&' or '#'; the only restriction on a
+   channel name is that it may not contain any spaces (' '), a control G
+   (^G or ASCII 7), or a comma (',' which is used as a list item
+   separator by the protocol).
+	 */
+	
+bool Channel::invalid_channel_name(std::string const & name) {
+	char illegal_chars[] = {
+		' ', 7, ',', '\0'
+	};
+	if (name.find_first_of(illegal_chars) != std::string::npos)
+		return true;
+	if (name[0] != '#' && name[0] != '&')
+		return true;
+	if (name.size() > 200)
+		return true;
+	return false;
+}
+
 typedef std::vector<Client const *>::const_iterator client_iterator;
 void Channel::remove_client(Client * client) {
 	remove_from_vector(client, this->clients);

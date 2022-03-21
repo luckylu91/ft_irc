@@ -13,6 +13,8 @@ class Client {
 public:
 	Client(int sockfd, struct sockaddr_in addr, Server & server);
 
+	static bool invalid_nick(std::string const & nick);
+
 	void set_password(std::string const & password);
 	void set_user(std::string const & user_name, std::string const & real_name);
 	void set_nick(std::string const & nick);

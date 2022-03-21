@@ -17,6 +17,8 @@ public:
 			(void)this->server;
 		}
 
+	static bool invalid_channel_name(std::string const & name);
+
 	void remove_client(Client * client);
 	std::string get_name() const { return this->name; }
 	std::vector<Client const *> & get_clients() { return this->clients; }
