@@ -30,7 +30,8 @@ public:
 	void join_cmd(Client * c, std::string chan_name);
 
 	// Numeric responses
-	Message base_message(std::string const & command) const;
+	Message base_message(Client const * client, std::string const & command) const;
+	Message base_message_no_nick(std::string const & command) const;
 
 	// registation
 	void rpl_welcome(Client const * client) const;

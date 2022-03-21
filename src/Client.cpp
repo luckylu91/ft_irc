@@ -44,9 +44,9 @@ Client::Client(int sockfd, struct sockaddr_in addr, Server & server):
 	sockfd(sockfd),
 	addr(addr),
 	server(server),
-	nick("no_nick"),
-	user_name("no_user_name"),
-	real_name("no_real_name") {}
+	nick("*"),
+	user_name("*"),
+	real_name("*") {}
 
 void Client::set_password(std::string const & password) {
 	// std::cout << "SET_PASSWORD" << std::endl;

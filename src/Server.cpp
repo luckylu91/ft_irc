@@ -225,7 +225,15 @@ bool Server::nick_exists(std::string const & nick) const {
 	return (it != this->clients.end());
 }
 
-Message Server::base_message(std::string const & command) const {
+Message Server::base_message(Client const * client, std::string const & command) const {
+	Message message;
+	message.set_source(this->name);
+	message.set_command(command);
+	message.add_param(client->get_nick());
+	return message;
+}
+
+Message Server::base_message_no_nick(std::string const & command) const {
 	Message message;
 	message.set_source(this->name);
 	message.set_command(command);
@@ -233,23 +241,22 @@ Message Server::base_message(std::string const & command) const {
 }
 
 void Server::rpl_welcome(Client const * client) const {
-	Message m = this->base_message(RPL_WELCOME);
-
+	Message m = this->base_message(client, RPL_WELCOME);
 	m.add_param("Welcome to the Internet Relay Network " + client->name());
 	this->send_message(client, m);
 }
 void Server::rpl_yourhost(Client const * client) const {
-	Message m = this->base_message(RPL_YOURHOST);
+	Message m = this->base_message(client, RPL_YOURHOST);
 	m.add_param("Your host is " + this->name + " running version " + this->version);
 	this->send_message(client, m);
 }
 void Server::rpl_created(Client const * client) const {
-	Message m = this->base_message(RPL_CREATED);
+	Message m = this->base_message(client, RPL_CREATED);
 	m.add_param("This server was created " + this->creation_time_string);
 	this->send_message(client, m);
 }
 void Server::rpl_myinfo(Client const * client) const {
-	Message m = this->base_message(RPL_MYINFO);
+	Message m = this->base_message(client, RPL_MYINFO);
 	m.add_param(this->name + " " + this->version); // + "<available user modes> <available channel modes>");
 	this->send_message(client, m);
 }
@@ -257,19 +264,18 @@ void Server::rpl_myinfo(Client const * client) const {
 //RPL JOIN
 
 void Server::rpl_join(Client const * client, Channel const * chan) const {
-	Message m = this->base_message("JOIN");
+	Message m = this->base_message(client, "JOIN");
 	m.add_param(chan->get_name());
 	this->send_message(client, m);
 }
 void Server::rpl_notopic(Client const * client, Channel const * chan) const {
-	Message m = this->base_message(RPL_NOTOPIC);
+	Message m = this->base_message(client, RPL_NOTOPIC);
 	m.add_param(chan->get_name());
 	m.add_param(":No topic is set\r\n");
 	this->send_message(client, m);
 }
 void Server::rpl_namreply(Client const * client, Channel const * chan) const {
-	Message m = this->base_message(RPL_NAMREPLY);
-	m.add_param(client->get_nick());
+	Message m = this->base_message(client, RPL_NAMREPLY);
 	m.add_param("=");
 	m.add_param(chan->get_name());
 	m.add_param(chan->op_cli_message());
@@ -280,84 +286,72 @@ void Server::rpl_namreply(Client const * client, Channel const * chan) const {
 // RPL PONG
 
 void Server::rpl_pong(Client const * client) const {
-	Message m = this->base_message("PONG");
+	Message m = this->base_message_no_nick("PONG");
 	m.add_param(this->name);
-	m.add_param(client->name());
 	this->send_message(client, m);
 }
 
 // ERR
 
 void Server::err_needmoreparams(Client const * client, std::string const & command) const {
-	Message m = this->base_message(ERR_NEEDMOREPARAMS);
-	m.add_param(client->name());
+	Message m = this->base_message(client, ERR_NEEDMOREPARAMS);
 	m.add_param(command);
 	m.add_param("Not enough parameters");
 	this->send_message(client, m);
 }
 void Server::err_alreadyregistred(Client const * client) const {
-	Message m = this->base_message(ERR_ALREADYREGISTRED);
-	m.add_param(client->name());
+	Message m = this->base_message(client, ERR_ALREADYREGISTRED);
 	m.add_param("Unauthorized command (already registered)");
 	this->send_message(client, m);
 }
 void Server::err_nonicknamegiven(Client const * client) const {
-	Message m = this->base_message(ERR_NONICKNAMEGIVEN);
-	m.add_param(client->name());
+	Message m = this->base_message(client, ERR_NONICKNAMEGIVEN);
 	m.add_param("No nickname given");
 	this->send_message(client, m);
 }
 void Server::err_erroneusnickname(Client const * client, std::string const & nick) const {
-	Message m = this->base_message(ERR_ERRONEUSNICKNAME);
-	m.add_param(client->name());
+	Message m = this->base_message(client, ERR_ERRONEUSNICKNAME);
 	m.add_param(nick);
 	m.add_param("Erroneous nickname");
 	this->send_message(client, m);
 }
 void Server::err_nicknameinuse(Client const * client, std::string const & nick) const {
-	Message m = this->base_message(ERR_NICKNAMEINUSE);
-	m.add_param(client->name());
+	Message m = this->base_message(client, ERR_NICKNAMEINUSE);
 	m.add_param(nick);
 	m.add_param("Nickname is already in use");
 	this->send_message(client, m);
 }
 void Server::err_restricted(Client const * client) const {
-	Message m = this->base_message(ERR_RESTRICTED);
-	m.add_param(client->name());
+	Message m = this->base_message(client, ERR_RESTRICTED);
 	m.add_param("Your connection is restricted!");
 	this->send_message(client, m);
 }
 void Server::err_passwdmismatch(Client const * client) const {
-	Message m = this->base_message(ERR_PASSWDMISMATCH);
-	m.add_param(client->name());
+	Message m = this->base_message(client, ERR_PASSWDMISMATCH);
 	m.add_param("Password incorrect");
 	this->send_message(client, m);
 }
 void Server::err_nosuchnick(Client const * client, std::string const & nick) const {
-	Message m = this->base_message(ERR_NOSUCHNICK);
-	m.add_param(client->name());
+	Message m = this->base_message(client, ERR_NOSUCHNICK);
 	m.add_param(nick);
 	m.add_param("No such nick/channel");
 	this->send_message(client, m);
 }
 
 void Server::err_norecipient(Client const * client, std::string const & command) const {
-	Message m = this->base_message(ERR_NORECIPIENT);
-	m.add_param(client->name());
+	Message m = this->base_message(client, ERR_NORECIPIENT);
 	m.add_param("No recipient given (" + command + ")");
 	this->send_message(client, m);
 }
 
 void Server::err_notexttosend(Client const * client) const {
-	Message m = this->base_message(ERR_NOTEXTTOSEND);
-	m.add_param(client->name());
+	Message m = this->base_message(client, ERR_NOTEXTTOSEND);
 	m.add_param("No text to send");
 	this->send_message(client, m);
 }
 
 void Server::err_nosuchchannel(Client const * client, std::string const & channel_name) const {
-	Message m = this->base_message(ERR_NOSUCHCHANNEL);
-	// m.add_param(client->name());
+	Message m = this->base_message(client, ERR_NOSUCHCHANNEL);
 	m.add_param(channel_name);
 	m.add_param("No such channel");
 	this->send_message(client, m);
