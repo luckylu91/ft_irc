@@ -151,6 +151,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 		return this->err_norecipient(client, "PRIVMSG");
 		if (message.get_param().size() == 1)
 		return this->err_notexttosend(client);
+		std::cout<<"debug dans receive message if == privnsg message = "<< message.to_string()<<std::endl;
 		this->privmsg(client, message.get_param()[0], message.get_param()[1]);
   	}
 }
