@@ -150,9 +150,9 @@ void Server::receive_message(int sockfd, Message const & message) {
 		}
 
 	}
-	else if (message.get_command() == "PRIVMSG") {
+	else if (message.get_command() == "PRIVMSG" || message.get_command() == "NOTICE") {
 		if (message.get_param().size() == 0)
-			return this->err_norecipient(client, "PRIVMSG");
+			return this->err_norecipient(client, message.get_command());
 		if (message.get_param().size() == 1)
 			return this->err_notexttosend(client);
 		this->privmsg(client, message.get_param()[0], message.get_param()[1]);
