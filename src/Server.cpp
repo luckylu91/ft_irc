@@ -17,7 +17,9 @@ Server::Server(std::string const & name, std::string const & version, std::strin
 	name(name),
 	version(version),
 	password(password),
-	clients() {
+	clients(),
+	channels(),
+	creation_time_string() {
 		time_t timestamp = time(NULL);
 		this->creation_time_string = ctime(&timestamp);
 		this->creation_time_string.erase(this->creation_time_string.find_last_not_of("\n") + 1);
@@ -50,7 +52,11 @@ void Server::new_client(int sockfd, struct sockaddr_in addr) {
 	this->clients.push_back(client);
 }
 
+/////////////////////////////////////////
 void Server::remove_client(Client * client) {
+	// for_each_in_vector<NotifyQuitIfRelated>(client, this->clients);
+	// for_each_in_vector<NotifyQuit>(client, client->related_clients());
+	this->rpl_quit(client);
 	for_each_in_vector<RemoveClientFromChannel>(client, this->channels);
 	remove_from_vector(client, this->clients);
 	delete client;
@@ -111,7 +117,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 			return this->err_norecipient(client, message.get_command());
 		if (message.get_param().size() == 1)
 			return this->err_notexttosend(client);
-		this->msg_cmd(client, message.get_param()[0], message.get_param()[1]);
+		this->msg_cmd(message.get_command(), client, message.get_param()[0], message.get_param()[1]);
 	}
 	else if (message.get_command() == "PING") {
 		// ...
@@ -185,24 +191,23 @@ void Server::join_cmd(Client * client, std::string chan_name)
 // ERR_TOOMANYTARGETS
 // ERR_NOSUCHNICK
 // RPL_AWAY
-void Server::msg_cmd(Client const * src, std::string const & msgtarget, std::string const & message) {
+void Server::msg_cmd(std::string const & command, Client const * src, std::string const & msgtarget, std::string const & message_str) {
 	try {
 		Client * dest_client = this->find_client_by_nick(msgtarget);
-		src->send_message(dest_client, message);
+		this->rpl_msg(command, src, dest_client, message_str);
 	}
 	catch (NoSuchClientNickException &) {
 		try {
 			Channel * dest_channel = this->find_channel_by_name(msgtarget);
-			// std::cout<<"debug dans privnessage channel message\n";
-			this->msg_channel(src, dest_channel, message);
+			// dest_channel->forward_message(src, message_str);
+			if (!dest_channel->contains_client(src))
+				return this->err_cannotsendtochan(src, msgtarget);
+			this->rpl_msg(command, src, dest_channel, message_str);
 		}
 		catch (NoSuchChannelNameException &) {
 			this->err_nosuchnick(src, msgtarget);
 		}
 	}
-}
-void Server::msg_channel(Client const * src, Channel const * dest, std::string const & message) const {
-	dest->forward_message(src, message);
 }
 
 static void parse_one_comma_list(std::vector<std::string> & args, std::vector<std::string> * result_vector) {
@@ -257,8 +262,9 @@ void Server::part_one_cmd(Client * client, std::string const & channel_name, std
 	Channel * channel = try_action_on_channel_name(client, channel_name);
 	if (channel == NULL)
 		return ;
+	this->rpl_part(client, channel, part_message);
 	channel->remove_client(client);
-	this->msg_channel(client, channel, part_message);
+	// this->msg_channel(client, channel, part_message);
 }
 
 
@@ -271,11 +277,10 @@ void Server::kick_cmd(Client * src, Message const & message) {
 		parse_one_comma_list(args, &dests);
 		if (channels.size() > 1 && channels.size() != dests.size())
 			return ;
-		std::string * part_message = args.size() > 0 ? &args[0] : NULL;
 		for (std::size_t i = 0; i < dests.size(); i++) {
 			std::string channel = channels.size() == 1 ? channels[0] : channels[i];
 			std::string dest = dests[i];
-			this->kick_one_cmd(src, channel, dest, part_message);
+			this->kick_one_cmd(src, channel, dest, args.size() > 0 ? args[0] : dest);
 		}
 	}
 	catch (...) {
@@ -283,7 +288,8 @@ void Server::kick_cmd(Client * src, Message const & message) {
 	}
 }
 
-void Server::kick_one_cmd(Client * src, std::string const & channel_name, std::string const & dest_name, std::string const * part_message_option) {
+void Server::kick_one_cmd(Client * src, std::string const & channel_name,
+		std::string const & dest_name, std::string const & kick_message) {
 	Channel * channel = try_action_on_channel_name(src, channel_name);
 	if (channel == NULL)
 		return ;
@@ -292,9 +298,10 @@ void Server::kick_one_cmd(Client * src, std::string const & channel_name, std::s
 	try {
 		Client * dest = this->find_client_by_nick(dest_name);
 		if (!channel->contains_client(dest))
-			throw NoSuchClientException();
-		std::string part_message = part_message_option != NULL ? *part_message_option : dest->get_nick();
-		this->part_one_cmd(dest, channel_name, part_message);
+			return this->err_usernotinchannel(src, dest_name, channel);
+		channel->remove_client(dest);
+		this->rpl_kick(src, dest, channel, kick_message);
+		// this->part_one_cmd(dest, channel_name, part_message);
 	}
 	catch (NoSuchClientException &) {
 		return this->err_usernotinchannel(src, dest_name, channel);
@@ -356,7 +363,7 @@ void Server::rpl_join(Client const * client, Channel const * chan) const {
 	m.set_source(client->name());
 	m.set_command("JOIN");
 	m.add_param(chan->get_name());
-	this->send_message(client, m);
+	chan->forward_message(m);
 }
 void Server::rpl_notopic(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(client, RPL_NOTOPIC);
@@ -386,6 +393,62 @@ void Server::rpl_pong(Client const * client) const {
 	Message m = this->base_message_no_nick("PONG");
 	m.add_param(this->name);
 	this->send_message(client, m);
+}
+
+// PART & KICK
+
+void Server::rpl_part(Client const * client, Channel const * channel, std::string const & part_message) const {
+	Message m;
+	m.set_source(client->name());
+	m.set_command("PART");
+	m.add_param(channel->get_name());
+	m.add_param(part_message);
+	channel->forward_message(m);
+}
+
+void Server::rpl_kick(Client const * src, Client const * dest, Channel const * channel, std::string const & kick_message) const {
+	Message m;
+	m.set_source(src->name());
+	m.set_command("KICK");
+	m.add_param(channel->get_name());
+	m.add_param(dest->name());
+	m.add_param(kick_message);
+	channel->forward_message(m);
+}
+
+// PRIVMSG & NOTICE
+
+void Server::rpl_msg(std::string const & command, Client const * src, Channel const * channel, std::string const & content) const {
+	Message m;
+	m.set_source(src->name());
+	m.set_command(command);
+	m.add_param(channel->get_name());
+	m.add_param(content);
+	channel->forward_message_except_sender(m, src);
+}
+
+void Server::rpl_msg(std::string const & command, Client const * src, Client const * dest, std::string const & content) const {
+	if (src == dest)
+		return ;
+	Message m;
+	m.set_source(src->name());
+	m.set_command(command);
+	m.add_param(dest->name());
+	m.add_param(content);
+	this->send_message(dest, m);
+}
+
+// QUIT
+
+void Server::rpl_quit(Client const * client, std::string const & quit_msg) {
+	Message m;
+	m.set_source(client->name());
+	m.set_command("QUIT");
+	if (quit_msg.size() > 0)
+		m.add_param(quit_msg);
+	else
+		m.add_param("Client Quit");
+	for_each_in_vector(SendMessageToClientDifferent(client, m), client->related_clients());
 }
 
 // ERR
@@ -434,26 +497,22 @@ void Server::err_nosuchnick(Client const * client, std::string const & nick) con
 	m.add_param("No such nick/channel");
 	this->send_message(client, m);
 }
-
 void Server::err_norecipient(Client const * client, std::string const & command) const {
 	Message m = this->base_message(client, ERR_NORECIPIENT);
 	m.add_param("No recipient given (" + command + ")");
 	this->send_message(client, m);
 }
-
 void Server::err_notexttosend(Client const * client) const {
 	Message m = this->base_message(client, ERR_NOTEXTTOSEND);
 	m.add_param("No text to send");
 	this->send_message(client, m);
 }
-
 void Server::err_nosuchchannel(Client const * client, std::string const & channel_name) const {
 	Message m = this->base_message(client, ERR_NOSUCHCHANNEL);
 	m.add_param(channel_name);
 	m.add_param("No such channel");
 	this->send_message(client, m);
 }
-
 void Server::err_chanoprivsneeded(Client const * client, Channel const * channel) const {
 	Message m = this->base_message(client, ERR_CHANOPRIVSNEEDED);
 	m.add_param(channel->get_name());
@@ -479,23 +538,9 @@ void Server::err_badchanmask(Client const * client, Channel const * channel) con
 	m.add_param("Bad Channel Mask");
 	this->send_message(client, m);
 }
-
-bool SameNick::operator()(std::string const & nick, Client const * client) {
-	return nick == client->get_nick();
-}
-
-bool SameSockfd::operator()(int sockfd, Client const * client) {
-	return sockfd == client->get_sockfd();
-}
-
-bool SameChannelName::operator()(std::string const & name, Channel const * channel) {
-	return name == channel->get_name();
-}
-
-void RemoveClientFromChannel::operator()(Client * client, Channel * channel) {
-	channel->remove_client(client);
-}
-
-void RemoveChannelFromClient::operator()(Channel * channel, Client * client) {
-	client->remove_channel(channel);
+void Server::err_cannotsendtochan(Client const * client, std::string const & channel_name) const {
+	Message m = this->base_message(client, ERR_CANNOTSENDTOCHAN);
+	m.add_param(channel_name);
+	m.add_param("Cannot send to channel");
+	this->send_message(client, m);
 }

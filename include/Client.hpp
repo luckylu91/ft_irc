@@ -25,12 +25,12 @@ public:
 	std::vector<Channel *> & get_channels() { return this->channels; }
 	void remove_channel(Channel const * channel);
 	Message base_privmsg() const;
-	void send_message(Client const * dest, std::string const & content) const;
+	// void send_message(Client const * dest, std::string const & content) const;
 	void receive_message(Message const & message) const;
+	std::vector<Client const *> related_clients() const;
 
 private:
 	int sockfd;
-	std::vector<Channel *> chan;
 	struct sockaddr_in addr;
 	Server & server;
 	std::vector<Channel *> channels;

@@ -26,12 +26,13 @@ public:
 	void send_message(Client const *, Message const & message) const;
 	void receive_message(int sockfd, Message const & message);
 	void welcome(Client const * client) const;
-	void msg_cmd(Client const * source, std::string const & msgtarget, std::string const & message);
-	void msg_channel(Client const * src, Channel const * dest, std::string const & message) const;
+	void msg_cmd(std::string const & command, Client const * source, std::string const & msgtarget,
+		std::string const & message);
 	void join_cmd(Client * c, std::string chan_name);
 	Channel * try_action_on_channel_name(Client const * client, std::string const & channel_name);
 	void kick_cmd(Client * src, Message const & message);
-	void kick_one_cmd(Client * src, std::string const & channel_name, std::string const & dest_name, std::string const * part_message_option);
+	void kick_one_cmd(Client * src, std::string const & channel_name, std::string const & dest_name,
+		std::string const & kick_message);
 	void part_cmd(Client * client, Message const & message);
 	void part_one_cmd(Client * client, std::string const & channel_name, std::string const & part_message);
 
@@ -53,8 +54,15 @@ public:
 	void rpl_endofnames(Client const * client, Channel const * chan) const;
 	//pong
 	void rpl_pong(Client const * client) const;
-
-	// errors
+	//kick & part
+	void rpl_part(Client const * client, Channel const * channel, std::string const & part_message) const;
+	void rpl_kick(Client const * src, Client const * dest, Channel const * channel, std::string const & kick_message) const;
+	//privmsg & notice
+	void rpl_msg(std::string const & command, Client const * src, Channel const * channel, std::string const & content) const;
+	void rpl_msg(std::string const & command, Client const * src, Client const * dest, std::string const & content) const;
+	//quit
+	void rpl_quit(Client const * client, std::string const & quit_msg = std::string());
+	//errors
 	void err_needmoreparams(Client const * client, std::string const & command) const;
 	void err_alreadyregistred(Client const * client) const;
 	void err_nonicknamegiven(Client const * client) const;
@@ -71,6 +79,7 @@ public:
 	void err_usernotinchannel(Client const * client, std::string const & nick, Channel const * channel) const;
 	void err_notonchannel(Client const * client, Channel const * channel) const;
 	void err_badchanmask(Client const * client, Channel const * channel) const;
+	void err_cannotsendtochan(Client const * client, std::string const & channel_name) const;
 
 private:
 	std::string name;
@@ -79,22 +88,6 @@ private:
 	std::vector<Client *> clients;
 	std::vector<Channel *> channels;
 	std::string creation_time_string;
-};
-
-struct SameNick {
-	bool operator()(std::string const & nick, Client const * client);
-};
-struct SameSockfd {
-	bool operator()(int sockfd, Client const * client);
-};
-struct SameChannelName {
-	bool operator()(std::string const & name, Channel const * channel);
-};
-struct RemoveClientFromChannel {
-	void operator()(Client * client, Channel * channel);
-};
-struct RemoveChannelFromClient {
-	void operator()(Channel * channel, Client * client);
 };
 
 // ERR_NEEDMOREPARAMS
