@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 #include "Server.hpp"
 #include "Message.hpp"
 #include "utils.hpp"
@@ -10,6 +11,8 @@
 // special = "[", "]", "\", "`", "_", "^", "{", "|", "}"
 // letter = A-Z / a-z
 // nickname = ( letter / special ) *8( letter / digit / special / "-" )
+
+typedef std::vector<Channel *>::const_iterator channel_const_iterator;
 
 static bool is_special_char(char c) {
 	switch (c) {
@@ -46,7 +49,10 @@ Client::Client(int sockfd, struct sockaddr_in addr, Server & server):
 	server(server),
 	nick("*"),
 	user_name("*"),
-	real_name("*") {}
+	real_name("*"),
+	is_identified(false),
+	is_user(false),
+	is_nick(false) {}
 
 void Client::set_password(std::string const & password) {
 	// std::cout << "SET_PASSWORD : '" << special_string(password) << "'" << std::endl;
@@ -67,7 +73,6 @@ void Client::set_user(std::string const & user_name, std::string const & real_na
 	//  std::cout << "is_identifier" <<this->is_identified <<"is_nick" <<this->is_nick <<std::endl;
 	// std::cout << "debug: user_name = " << user_name << ", real_name = " << real_name << std::endl;
 	if (!this->is_identified && this->is_nick) {
-
 		return this->server.err_passwdmismatch(this);
 	}
 	if (this->is_registered()) {
@@ -100,13 +105,11 @@ void Client::set_nick(std::string const & nick) {
 		return this->server.err_nicknameinuse(this, nick);
 	}
 	this->nick = nick;
-
 	// std::cout << " debug dans setnick " <<"is_nick = "<<is_nick<<"is_identified = "<<is_identified<<"is_user = "<<is_user<< std::endl;
 	if (!this->is_nick && this->is_user) {
 		// std::cout << "REGISTERED" << std::endl;
 		this->server.welcome(this);
 	}
-
 	// std::cout << "SET_NICK = true" << std::endl;
 	this->is_nick = true;
 }
@@ -135,13 +138,24 @@ Message Client::base_privmsg() const {
 	return message;
 }
 
-void Client::send_message(Client const * dest, std::string const & content) const {
-	Message message = this->base_privmsg();
-	message.add_param(dest->name());
-	message.add_param(content);
-	this->server.send_message(this, message);
-}
+// void Client::send_message(Client const * dest, std::string const & content) const {
+// 	Message message = this->base_privmsg();
+// 	message.add_param(dest->name());
+// 	message.add_param(content);
+// 	this->server.send_message(this, message);
+// }
 
 void Client::receive_message(Message const & message) const {
 	this->server.send_message(this, message);
+}
+
+std::vector<Client const *> Client::related_clients() const {
+	std::vector<Client const *> related_clients;
+	for (std::size_t i = 0; i < this->channels.size(); i++) {
+		std::vector<Client const *> channel_clients = this->channels[i]->get_clients();
+		for (std::size_t j = 0; j < channel_clients.size(); j++) {
+			add_if_no_in(channel_clients[j], related_clients);
+		}
+	}
+	return related_clients;
 }

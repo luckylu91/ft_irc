@@ -52,9 +52,19 @@ void for_each_in_vector(A & a, Vector & vec) {
 		act_on_a
 	);
 }
+
 template <class Action, class A, class Vector>
 void for_each_in_vector(A & a, Vector const & vec) {
 	ParametrizedUnaryFunction<A, const typename Vector::value_type, Action, void> act_on_a(a);
+	std::for_each(
+		vec.begin(),
+		vec.end(),
+		act_on_a
+	);
+}
+
+template <class Action, class Vector>
+void for_each_in_vector(Action act_on_a, Vector const & vec) {
 	std::for_each(
 		vec.begin(),
 		vec.end(),

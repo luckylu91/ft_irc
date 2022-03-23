@@ -30,7 +30,9 @@ public:
 	std::vector<Client const *>const & get_operators() const ;
 	std::vector<Client const *> & get_clients() { return this->clients; }
 	std::string op_cli_message() const;
-	void forward_message(Client const * src, std::string const & content) const;
+	// void forward_message(Client const * src, std::string const & content) const;
+	void forward_message(Message & message) const;
+	void forward_message_except_sender(Message & message, Client const * sender) const;
 	bool contains_client(Client const * client) const;
 	void mode_cmd_channel(Client * client, Message const & message);
 	void invite_cmd_channel(Client * client, std::vector<std::string> param);
@@ -49,8 +51,4 @@ private:
 	bool is_private;
 	bool is_secret;
 	bool is_topic_protected;
-};
-
-struct SendMessageToClient {
-	void operator()(Message const & message, Client const * client);
 };

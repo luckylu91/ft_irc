@@ -57,17 +57,23 @@ std::string Channel::op_cli_message() const {
 	return r;
 }
 
-void Channel::forward_message(Client const * src, std::string const & content) const {
-	Message message;
-	message.set_source(src->name());
-	message.add_param(this->get_name());
-	message.add_param(content);
+// void Channel::forward_message(Client const * src, std::string const & content) const {
+// 	Message message;
+// 	message.set_source(src->name());
+// 	message.add_param(this->get_name());
+// 	message.add_param(content);
+// 	this->forward_message(message);
+// }
+
+void Channel::forward_message(Message & message) const {
 	for_each_in_vector<SendMessageToClient>(message, this->clients);
 	for_each_in_vector<SendMessageToClient>(message, this->opers);
 }
 
-void SendMessageToClient::operator()(Message const & message, Client const * client) {
-	client->receive_message(message);
+void Channel::forward_message_except_sender(Message & message, Client const * sender) const {
+	SendMessageToClientDifferent action(sender, message);
+	for_each_in_vector(action, this->clients);
+	for_each_in_vector(action, this->opers);
 }
 
 bool Channel::contains_client(Client const * client) const {
