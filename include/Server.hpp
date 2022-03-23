@@ -29,6 +29,7 @@ public:
 	void msg_channel(Client const * src, Channel const * dest, std::string const & message) const;
 	void join_cmd(Client * c, std::string chan_name);
 
+	void	parse_exe_join(Client * client, Message const & message);
 	// Numeric responses
 	Message base_message(Client const * client, std::string const & command) const;
 	Message base_message_no_nick(std::string const & command) const;
@@ -44,7 +45,6 @@ public:
 	void rpl_notopic(Client const * client, Channel const * chan) const;
 	void rpl_namreply(Client const * client, Channel const * chan) const;
 	void rpl_endofnames(Client const * client, Channel const * chan) const;
-
 	//pong
 	void rpl_pong(Client const * client) const;
 

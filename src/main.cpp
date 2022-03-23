@@ -100,8 +100,8 @@ int main(int, char *argv[])
 					error("ERROR reading from socket");
 
 				// printf("troisieme if 3 \n");
-				printf("Here is the message: %s\n",buffer);
-				// std::cout << special_string(std::string() + "Here is the message: " + buffer) << std::endl;
+				// printf("Here is the message: %s\n",buffer);
+				// std::cout << special_string(std::string("message: ") + buffer) << std::endl;
 				// Message m = Message::parse(buffer);
 				int client_sockfd = static_cast<int>(tevent.ident);
 				Message::parse(buffer, &vec);

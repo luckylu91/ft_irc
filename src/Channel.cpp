@@ -43,6 +43,8 @@ std::string Channel::op_cli_message() const {
 			r.append(" ");
 		r.append((*it)->get_nick());
 	}
+	if (clients.size() > 0 && opers.size() > 0)
+		r.append(" ");
 	for(client_iterator it = opers.begin(); it != opers.end();it++)
 	{
 		if (it != opers.begin())

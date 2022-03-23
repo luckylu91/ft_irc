@@ -1,22 +1,22 @@
 - PASS
 - NICK
 - USER
-
-- JOIN
+- PING / PONG
 - PRIVMSG
 - NOTICE
+- JOIN
+
 - OPER
-- PING / PONG
 - QUIT
 - PART
+- KICK
+- MODE (channel)
 
-- MODE
 - MODE
 - TOPIC
 - NAMES
 - LIST
 - INVITE
-- KICK
 - MOTD
 - LUSERS
 - VERSION

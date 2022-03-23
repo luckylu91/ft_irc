@@ -94,65 +94,14 @@ void Server::receive_message(int sockfd, Message const & message) {
 			return this->err_needmoreparams(client, "PASS");
 		client->set_password(message.get_param()[0]);
 	}
-
 	else if (message.get_command() == "JOIN") {
 		if (message.get_param().size() == 0)
 			return this->err_needmoreparams(client, "JOIN");
-
-//	std::cout<<"IN JOIN 2\n";
-		std::string temp = (message.get_param())[0];
-		std::string chan_name;
-		size_t f;
-		while(!temp.empty())
-		{
-//	std::cout<<"IN JOIN 3\n";
-			f = temp.find(',');
-
-//	std::cout<<"IN JOIN 4\n";
-
-//	std::cout<<"IN JOIN 3.4\n";
-			if (f != std::string::npos)
-			{
-//	std::cout<<"IN JOIN 3.3\n";
-
-				chan_name = temp.substr(f);
-				temp.erase(f+1);
-			}
-			else
-			{
-//	std::cout<<"IN JOIN 4 "<<temp<<"\n";
-				chan_name = temp;
-				temp.clear();
-
-//	std::cout<<"IN JOIN 4.4\n";
-			}
-			if (Channel::invalid_channel_name(chan_name)) {
-				this->err_nosuchchannel(client, chan_name);
-				continue ;
-			}
-			join_cmd(client, chan_name);
-
-// 			if(	join_cmd(client,chan_name))
-// 			{
-
-// //	std::cout<<"IN JOIN 5\n";
-// 				rpl_join(client,find_channel_by_name(chan_name));
-// 				rpl_notopic(client,find_channel_by_name(chan_name));
-// 				rpl_namreply(client,find_channel_by_name(chan_name));
-// 			}
-// 			else
-// 			{
-// 				//bug creating chan
-// 				std::cout<<"Bug creating chan\n";
-// 			}
-
-//	std::cout<<"IN JOIN 6\n";
-		}
-
+		parse_exe_join(client, message);
 	}
-	else if (message.get_command() == "PRIVMSG") {
+	else if (message.get_command() == "PRIVMSG" || message.get_command() == "NOTICE") {
 		if (message.get_param().size() == 0)
-			return this->err_norecipient(client, "PRIVMSG");
+			return this->err_norecipient(client, message.get_command());
 		if (message.get_param().size() == 1)
 			return this->err_notexttosend(client);
 		this->privmsg(client, message.get_param()[0], message.get_param()[1]);
@@ -161,6 +110,31 @@ void Server::receive_message(int sockfd, Message const & message) {
 		// ...
 		this->rpl_pong(client);
 	}
+}
+void	Server::parse_exe_join(Client * client, Message const & message)
+{
+		std::string temp = (message.get_param())[0];
+		std::string chan_name;
+		size_t f;
+		while(!temp.empty())
+		{
+			f = temp.find(',');
+			if (f != std::string::npos)
+			{
+				chan_name = temp.substr(f);
+				temp.erase(f+1);
+			}
+			else
+			{
+				chan_name = temp;
+				temp.clear();
+			}
+			if (Channel::invalid_channel_name(chan_name)) {
+				this->err_nosuchchannel(client, chan_name);
+				continue ;
+			}
+			join_cmd(client, chan_name);
+		}
 }
 
 void Server::join_cmd(Client * client, std::string chan_name)
@@ -279,7 +253,7 @@ void Server::rpl_join(Client const * client, Channel const * chan) const {
 void Server::rpl_notopic(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(client, RPL_NOTOPIC);
 	m.add_param(chan->get_name());
-	m.add_param(":No topic is set");
+	m.add_param("No topic is set");
 	this->send_message(client, m);
 }
 void Server::rpl_namreply(Client const * client, Channel const * chan) const {
