@@ -279,7 +279,7 @@ void Server::rpl_join(Client const * client, Channel const * chan) const {
 void Server::rpl_notopic(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(client, RPL_NOTOPIC);
 	m.add_param(chan->get_name());
-	m.add_param(":No topic is set");
+	m.add_param("No topic is set");
 	this->send_message(client, m);
 }
 void Server::rpl_namreply(Client const * client, Channel const * chan) const {
