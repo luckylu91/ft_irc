@@ -26,7 +26,8 @@ for line in lines:
 	# if num_list:
 	m = re.match(id_line_patt, line)
 	if m:
-		n = len(m.groups()) - 1
+		groups = list(filter(lambda x: x != None, m.groups()))
+		n = len(groups)
 		if n == 0:
 			f.write('\n')
 			continue

@@ -32,6 +32,8 @@ typedef std::vector<Client const *>::const_iterator client_iterator;
 void Channel::remove_client(Client * client) {
 	remove_from_vector(client, this->clients);
 	remove_from_vector(client, this->opers);
+	if (this->size() == 0)
+		this->server.remove_channel(this);
 }
 
 std::string Channel::op_cli_message() const {
@@ -70,4 +72,16 @@ void SendMessageToClient::operator()(Message const & message, Client const * cli
 
 bool Channel::contains_client(Client const * client) const {
 	return is_in_vector(client, this->opers) || is_in_vector(client, this->clients);
+}
+
+bool Channel::is_operator(Client const * client) const {
+	return is_in_vector(client, this->opers);
+}
+
+bool Channel::is_normal_user(Client const * client) const {
+	return is_in_vector(client, this->clients);
+}
+
+std::size_t Channel::size() const {
+	return this->clients.size() + this->opers.size();
 }

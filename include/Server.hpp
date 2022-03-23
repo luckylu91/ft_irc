@@ -15,6 +15,7 @@ public:
 	void new_client(int sockfd, struct sockaddr_in addr);
 	void remove_client(Client * client);
 	void remove_client_sockfd(int sockfd);
+	void remove_channel(Channel * channel);
 	// Client * find_client_by_addr(struct sockaddr_in addr);
 	Client * find_client_by_sockfd(int sockfd) const;
 	Client * find_client_by_nick(std::string const & nick) const;
@@ -25,9 +26,14 @@ public:
 	void send_message(Client const *, Message const & message) const;
 	void receive_message(int sockfd, Message const & message);
 	void welcome(Client const * client) const;
-	void privmsg(Client const * source, std::string const & msgtarget, std::string const & message);
+	void msg_cmd(Client const * source, std::string const & msgtarget, std::string const & message);
 	void msg_channel(Client const * src, Channel const * dest, std::string const & message) const;
 	void join_cmd(Client * c, std::string chan_name);
+	Channel * try_action_on_channel_name(Client const * client, std::string const & channel_name);
+	void kick_cmd(Client * src, Message const & message);
+	void kick_one_cmd(Client * src, std::string const & channel_name, std::string const & dest_name, std::string const * part_message_option);
+	void part_cmd(Client * client, Message const & message);
+	void part_one_cmd(Client * client, std::string const & channel_name, std::string const & part_message);
 
 	// Numeric responses
 	Message base_message(Client const * client, std::string const & command) const;
@@ -61,7 +67,10 @@ public:
 	void err_norecipient(Client const * client, std::string const & command) const;
 	void err_notexttosend(Client const * client) const;
 	void err_nosuchchannel(Client const * client, std::string const & channel_name) const;
-
+	void err_chanoprivsneeded(Client const * client, Channel const * channel) const;
+	void err_usernotinchannel(Client const * client, std::string const & nick, Channel const * channel) const;
+	void err_notonchannel(Client const * client, Channel const * channel) const;
+	void err_badchanmask(Client const * client, Channel const * channel) const;
 
 private:
 	std::string name;
@@ -75,30 +84,21 @@ private:
 struct SameNick {
 	bool operator()(std::string const & nick, Client const * client);
 };
-
 struct SameSockfd {
 	bool operator()(int sockfd, Client const * client);
 };
-
 struct SameChannelName {
 	bool operator()(std::string const & name, Channel const * channel);
 };
-
 struct RemoveClientFromChannel {
 	void operator()(Client * client, Channel * channel);
 };
-
+struct RemoveChannelFromClient {
+	void operator()(Channel * channel, Client * client);
+};
 
 // ERR_NEEDMOREPARAMS
-// ERR_BADCHANNELKEY
-// ERR_NOSUCHCHANNEL
-
-// RPL_TOPIC
-
-// ERR_BANNEDFROMCHAN
-// ERR_INVITEONLYCHAN
-// ERR_CHANNELISFULL
+// ERR_CHANOPRIVSNEEDED
+// ERR_USERNOTINCHANNEL
+// ERR_NOTONCHANNEL
 // ERR_BADCHANMASK
-// ERR_TOOMANYCHANNELS
-// ERR_TOOMANYTARGETS
-// ERR_UNAVAILRESOURCE
