@@ -67,8 +67,8 @@ void Server::remove_channel(Channel * channel) {
 	delete channel;
 }
 
-bool Server::try_password(std::string const & password) const {
-	return password == this->password;
+bool Server::try_password(std::string const & pass) const {
+	return pass == this->password;
 }
 
 void Server::send_message(Client const * client, Message const & message) const {
@@ -175,17 +175,6 @@ void Server::join_cmd(Client * client, std::string chan_name)
 		this->rpl_namreply(client, channel);
 		this->rpl_endofnames(client, channel);
 	}
-	// for(std::vector<Channel *>::iterator it = channels.begin(); it != channels.end();it++)
-	// {
-	// 	if ((*it)->get_name() == chan_name)
-	// 	{
-	// 		add_if_no_in(client, (*it)->get_clients());
-	// 		add_if_no_in(*it, client->get_channels());
-	// 		return 1;
-	// 	}
-	// }
-	// channels.push_back(new Channel(*this, chan_name,client));
-	// return 1;
 }
 
 // ERR_NORECIPIENT
@@ -363,7 +352,9 @@ void Server::rpl_myinfo(Client const * client) const {
 //RPL JOIN
 
 void Server::rpl_join(Client const * client, Channel const * chan) const {
-	Message m = this->base_message(client, "JOIN");
+	Message m;
+	m.set_source(client->name());
+	m.set_command("JOIN");
 	m.add_param(chan->get_name());
 	this->send_message(client, m);
 }

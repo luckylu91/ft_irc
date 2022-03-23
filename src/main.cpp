@@ -31,7 +31,7 @@ int main(int, char *argv[])
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 
-	Server server("LE_SERVER", "0.1", "****");
+	Server server("LE_SERVER", "0.1", "root");
 
 	signal(SIGINT, &sig_handler);
 
