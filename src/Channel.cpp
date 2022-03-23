@@ -7,13 +7,13 @@
 #include <iostream>
 
 /*
-	Channels names are strings (beginning with a '&' or '#' character) of
-	length up to 200 characters.  Apart from the the requirement that the
-	first character being either '&' or '#'; the only restriction on a
-	channel name is that it may not contain any spaces (' '), a control G
-	(^G or ASCII 7), or a comma (',' which is used as a list item
-	separator by the protocol).
-*/
+   Channels names are strings (beginning with a '&' or '#' character) of
+   length up to 200 characters.  Apart from the the requirement that the
+   first character being either '&' or '#'; the only restriction on a
+   channel name is that it may not contain any spaces (' '), a control G
+   (^G or ASCII 7), or a comma (',' which is used as a list item
+   separator by the protocol).
+   */
 
 bool Channel::invalid_channel_name(std::string const & name) {
 	char illegal_chars[] = {
@@ -70,4 +70,67 @@ void SendMessageToClient::operator()(Message const & message, Client const * cli
 
 bool Channel::contains_client(Client const * client) const {
 	return is_in_vector(client, this->opers) || is_in_vector(client, this->clients);
+}
+
+void	Channel::mode_cmd_channel(Client * client, Message const & message)
+{
+	std::vector<std::string> temp_param = message.get_param();
+	bool signe;
+	Client * temp_client;
+	if (temp_param[1][0] == '+')
+		signe = 1;
+	else if (temp_param[1][0] == '+')
+		signe = 0;
+	else
+		return;
+	for(std::string::iterator it = temp_param[1].begin() + 1; it !=temp_param[1].end(); it++)
+	{
+		if (*it =='b' ||*it == 'o')
+		{
+			temp_client = server.find_client_by_nick(temp_param[2]);
+			if(*it == 'b')
+			{
+				if(signe)
+				{
+					banned.push_back(temp_client);	
+					//kicktodo
+				}
+				else
+				 	remove_from_vector(temp_client , banned);
+			}
+			else
+				{
+					if(signe)
+						opers.push_back(temp_client);	
+					else
+				 		remove_from_vector(temp_client , opers);
+				}
+		}
+		else if (*it == 'i')
+		{
+			if(signe && !is_invite_only)
+				invited = clients;
+			is_invite_only = signe;
+		}
+		else if (*it == 'p')
+			is_private = signe;
+		else if (*it == 's')
+			is_secret = signe;
+		else if (*it == 't')
+			is_topic_protected = signe;
+		else
+		{
+			server.err_unknownmode(client,std::string(1,*it), name);
+			return;
+		}
+	}
+}
+
+std::vector<Client const *> const & Channel::get_invited_vec() const 
+{
+		return invited;
+}
+std::vector<Client const *> const &  Channel::get_operators() const 
+{
+		return opers;
 }

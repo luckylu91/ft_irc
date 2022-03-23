@@ -110,31 +110,64 @@ void Server::receive_message(int sockfd, Message const & message) {
 		// ...
 		this->rpl_pong(client);
 	}
+	else if (message.get_command() == "MODE") {
+		if (message.get_param().size() == 0)
+			return this->err_needmoreparams(client, "MODE");
+		mode_cmd(client, message);
+	}
 }
+void	Server::mode_cmd(Client * client, Message const & message)
+{
+	std::vector<std::string> temp_param = message.get_param();
+	Channel * channel;
+	if(temp_param[0][0]=='#')
+	{
+		try{
+			channel = find_channel_by_name(temp_param[0]);
+		if(!is_in_vector(client, channel->get_operators()))
+		{
+			err_chanoprivsneeded(client, channel);
+			return;
+		}
+			channel->mode_cmd_channel(client,message);
+		}
+		catch (NoSuchChannelNameException &)
+		{
+			this->err_nosuchchannel(client, temp_param[0]);
+		}
+		catch (NoSuchClientNickException &) 
+		{
+			this->err_nosuchnick(client, temp_param[2]);
+		}
+	}
+	/*else()
+	{}*/
+}
+
 void	Server::parse_exe_join(Client * client, Message const & message)
 {
-		std::string temp = (message.get_param())[0];
-		std::string chan_name;
-		size_t f;
-		while(!temp.empty())
+	std::string temp = (message.get_param())[0];
+	std::string chan_name;
+	size_t find_value;
+	while(!temp.empty())
+	{
+		find_value = temp.find(',');
+		if (find_value != std::string::npos)
 		{
-			f = temp.find(',');
-			if (f != std::string::npos)
-			{
-				chan_name = temp.substr(f);
-				temp.erase(f+1);
-			}
-			else
-			{
-				chan_name = temp;
-				temp.clear();
-			}
-			if (Channel::invalid_channel_name(chan_name)) {
-				this->err_nosuchchannel(client, chan_name);
-				continue ;
-			}
-			join_cmd(client, chan_name);
+			chan_name = temp.substr(find_value);
+			temp.erase(find_value+1);
 		}
+		else
+		{
+			chan_name = temp;
+			temp.clear();
+		}
+		if (Channel::invalid_channel_name(chan_name)) {
+			this->err_nosuchchannel(client, chan_name);
+			continue ;
+		}
+		join_cmd(client, chan_name);
+	}
 }
 
 void Server::join_cmd(Client * client, std::string chan_name)
@@ -144,6 +177,11 @@ void Server::join_cmd(Client * client, std::string chan_name)
 	try {
 		channel = this->find_channel_by_name(chan_name);
 		already_in_channel = channel->contains_client(client);
+		if(channel->get_is_invite_only() && is_in_vector(client, channel->get_invited_vec())) 
+		{
+			err_inviteonlychan(client,chan_name);
+			return;
+		}
 		add_if_no_in(client, channel->get_clients());
 		add_if_no_in(channel, client->get_channels());
 	}
@@ -157,17 +195,6 @@ void Server::join_cmd(Client * client, std::string chan_name)
 		this->rpl_namreply(client, channel);
 		this->rpl_endofnames(client, channel);
 	}
-	// for(std::vector<Channel *>::iterator it = channels.begin(); it != channels.end();it++)
-	// {
-	// 	if ((*it)->get_name() == chan_name)
-	// 	{
-	// 		add_if_no_in(client, (*it)->get_clients());
-	// 		add_if_no_in(*it, client->get_channels());
-	// 		return 1;
-	// 	}
-	// }
-	// channels.push_back(new Channel(*this, chan_name,client));
-	// return 1;
 }
 
 // ERR_NORECIPIENT
@@ -214,7 +241,14 @@ Message Server::base_message(Client const * client, std::string const & command)
 	message.add_param(client->get_nick());
 	return message;
 }
-
+//
+// Message Server::base_message(Channel const * channel, std::string const & command) const {
+	// Message message;
+	// message.set_source(this->name);
+	// message.set_command(command);
+	// message.add_param(client->get_name());
+	// return message;
+// }
 Message Server::base_message_no_nick(std::string const & command) const {
 	Message message;
 	message.set_source(this->name);
@@ -333,6 +367,13 @@ void Server::err_norecipient(Client const * client, std::string const & command)
 	this->send_message(client, m);
 }
 
+void Server::err_chanoprivsneeded(Client const * client,Channel const * channel) const {
+	Message m = this->base_message(client, ERR_CHANOPRIVSNEEDED);
+	m.add_param(channel->get_name());
+	m.add_param("You're not channel operator");
+	this->send_message(client, m);
+}
+
 void Server::err_notexttosend(Client const * client) const {
 	Message m = this->base_message(client, ERR_NOTEXTTOSEND);
 	m.add_param("No text to send");
@@ -346,6 +387,19 @@ void Server::err_nosuchchannel(Client const * client, std::string const & channe
 	this->send_message(client, m);
 }
 
+void Server::err_inviteonlychan(Client const * client, std::string const & channel_name) const {
+	Message m = this->base_message(client, ERR_INVITEONLYCHAN);
+	m.add_param(channel_name);
+	m.add_param("Cannot join channel (+i)");
+	this->send_message(client, m);
+}
+void Server::err_unknownmode(Client const * client, std::string const & flag,std::string const & channel_name) const {
+	Message m = this->base_message(client,ERR_UNKNOWNMODE);
+	m.add_param(flag);
+	m.add_param("is unknown mode char to me for");
+	m.add_param(channel_name);
+	this->send_message(client, m);
+}
 
 bool SameNick::operator()(std::string const & nick, Client const * client) {
 	return nick == client->get_nick();
@@ -363,4 +417,3 @@ void RemoveClientFromChannel::operator()(Client * client, Channel * channel) {
 	channel->remove_client(client);
 	client->remove_channel(channel);
 }
-

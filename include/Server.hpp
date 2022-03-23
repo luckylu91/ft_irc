@@ -28,7 +28,7 @@ public:
 	void privmsg(Client const * source, std::string const & msgtarget, std::string const & message);
 	void msg_channel(Client const * src, Channel const * dest, std::string const & message) const;
 	void join_cmd(Client * c, std::string chan_name);
-
+	void mode_cmd(Client * client, Message const & message);
 	void	parse_exe_join(Client * client, Message const & message);
 	// Numeric responses
 	Message base_message(Client const * client, std::string const & command) const;
@@ -61,8 +61,9 @@ public:
 	void err_norecipient(Client const * client, std::string const & command) const;
 	void err_notexttosend(Client const * client) const;
 	void err_nosuchchannel(Client const * client, std::string const & channel_name) const;
-
-
+	void err_unknownmode(Client const * client, std::string const & flag,std::string const & channel_name) const ;
+	void err_chanoprivsneeded(Client const * client,Channel const * channel) const ;
+	void err_inviteonlychan(Client const * client, std::string const & channel_name) const;
 private:
 	std::string name;
 	std::string version;
