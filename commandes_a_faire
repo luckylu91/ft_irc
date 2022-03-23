@@ -6,10 +6,11 @@
 - PRIVMSG
 - NOTICE
 - OPER
-
-- MODE
+- PING / PONG
 - QUIT
 - PART
+
+- MODE
 - MODE
 - TOPIC
 - NAMES

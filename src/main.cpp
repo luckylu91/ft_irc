@@ -9,35 +9,36 @@
 #include <sys/event.h>
 #include <err.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+
+#include "main_utils.hpp"
+#include "utils.hpp"
 #include "Message.hpp"
 #include "Server.hpp"
 
+int sockfd = -1;
 
-
-void error(const char *msg)
-{
-	perror(msg);
-	exit(0);
-}
-int main(int argc, char *argv[])
+int main(int, char *argv[])
 {
 	struct	kevent event;	 /* Event we want to monitor */
 	struct	kevent tevents[20];
 
 	struct	kevent tevent;
 	std::vector<Message> vec;
-	int sockfd, newsockfd, portno, clilen, n, kq, ret;
+	int portno, clilen, n, kq, ret;
 
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 
-	Server server("LE_SERVER", "0.1", "root");
+	Server server("LE_SERVER", "0.1", "****");
+
+	signal(SIGINT, &sig_handler);
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	printf("sockfd = %i\n",sockfd);
+	int option = 1;
+	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+	// printf("sockfd = %i\n",sockfd);
 	if (sockfd < 0)
 		error("ERROR opening socket");
 	bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -59,7 +60,7 @@ int main(int argc, char *argv[])
 	{
 		vec.clear();
 		// printf("port = %i \n",cli_addr.sin_port);
-		 printf("tour de boucle infinie \n");
+		//  printf("tour de boucle infinie \n");
 		//
 		ret = kevent(kq, 0, 0, tevents,	20, NULL);
 		// printf("ident = %lu \n",tevent.ident);
@@ -68,19 +69,20 @@ int main(int argc, char *argv[])
 			tevent = tevents[i];
 			if (tevent.flags & EV_EOF)
 			{
-
 				// printf("premier if flags = %hu ident = %lu\n",tevent.flags,tevent.ident);
-				printf("Client has disconnected\n");
+				int client_sockfd = static_cast<int>(tevent.ident);
+				printf("Client has disconnected, sockfd = %d\n", client_sockfd);
 				close(tevent.ident);
-
+				server.remove_client_sockfd(static_cast<int>(tevent.ident));
 			}
-			else if (tevent.ident == sockfd)
+			else if (static_cast<int>(tevent.ident) == sockfd)
 			{
 
-				printf("New connection\n");
-				newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *)&clilen);
-				server.new_client(newsockfd, cli_addr);
-				EV_SET(&event, newsockfd, EVFILT_READ, EV_ADD  , 0, 0, 0);
+				int client_sockfd = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *)&clilen);
+				printf("New connection, sockfd = %d\n", client_sockfd);
+				// printf("client_sockfd = %d\n", client_sockfd);
+				server.new_client(client_sockfd, cli_addr);
+				EV_SET(&event, client_sockfd, EVFILT_READ, EV_ADD  , 0, 0, 0);
 
 				ret = kevent(kq, &event, 1, NULL,	0, NULL);
 			}
@@ -99,20 +101,18 @@ int main(int argc, char *argv[])
 
 				// printf("troisieme if 3 \n");
 				printf("Here is the message: %s\n",buffer);
+				// std::cout << special_string(std::string() + "Here is the message: " + buffer) << std::endl;
 				// Message m = Message::parse(buffer);
-				int cli_sockfd = static_cast<int>(tevent.ident);
-				Message::parse(buffer,&vec);
+				int client_sockfd = static_cast<int>(tevent.ident);
+				Message::parse(buffer, &vec);
 
-				printf("taille de size %lu\n",vec.size());
+				// printf("taille de size %lu\n",vec.size());
 				for (std::vector<Message>::iterator it = vec.begin(); it != vec.end(); it++)
 				{
-					std::cout<<"message : "<<it->to_string()<<std::endl;
-					server.receive_message(cli_sockfd, *it);
+					// std::cout<<"message : "<<it->to_string()<<std::endl;
+					// std::cout << special_string(std::string() + "message : " + it->to_string()) << std::endl;
+					server.receive_message(client_sockfd, *it);
 				}
-				// std::cout<<m;
-				// n = write(tevent.ident,"I got your message",18);
-				// if (n < 0)
-				// 	error("ERROR writing to socket");
 			}
 		}
 	}
