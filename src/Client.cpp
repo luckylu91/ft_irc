@@ -63,9 +63,11 @@ void Client::set_password(std::string const & password) {
 }
 
 void Client::set_user(std::string const & user_name, std::string const & real_name) {
-	// std::cout << "SET_USER" << std::endl;
+	 std::cout << "SET_USER" << std::endl;
+	 std::cout << "is_identifier" <<this->is_identified <<"is_nick" <<this->is_nick <<std::endl;
 	// std::cout << "debug: user_name = " << user_name << ", real_name = " << real_name << std::endl;
 	if (!this->is_identified && this->is_nick) {
+
 		return this->server.err_passwdmismatch(this);
 	}
 	if (this->is_registered()) {
@@ -83,26 +85,29 @@ void Client::set_user(std::string const & user_name, std::string const & real_na
 // (before)
 // ERR_NONICKNAMEGIVEN (431)
 void Client::set_nick(std::string const & nick) {
-	// std::cout << "SET_NICK" << std::endl;
+	std::cout << "SET_NICK" << std::endl;
+	 std::cout << "is_identifier" <<this->is_identified <<"is_user" <<this->is_user <<std::endl;
 	if (!this->is_identified && this->is_user) {
 		return this->server.err_passwdmismatch(this);
 	}
 	if (invalid_nick(nick)) {
-		// std::cout << "INVALIDE NICK" << std::endl;
+		std::cout << "INVALIDE NICK" << std::endl;
 		// std::cout << "nick = " << nick << std::endl;
 		return this->server.err_erroneusnickname(this, nick);
 	}
 	if (this->server.nick_exists(nick)) {
-		// std::cout << "NICK EXISTS" << std::endl;
+		std::cout << "NICK EXISTS" << std::endl;
 		return this->server.err_nicknameinuse(this, nick);
 	}
 	this->nick = nick;
 
 	// std::cout << " debug dans setnick " <<"is_nick = "<<is_nick<<"is_identified = "<<is_identified<<"is_user = "<<is_user<< std::endl;
 	if (!this->is_nick && this->is_user) {
-		// std::cout << "REGISTERED" << std::endl;
+		std::cout << "REGISTERED" << std::endl;
 		this->server.welcome(this);
 	}
+
+	std::cout << "SET_NICK = true" << std::endl;
 	this->is_nick = true;
 }
 

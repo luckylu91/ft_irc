@@ -101,61 +101,10 @@ void Server::receive_message(int sockfd, Message const & message) {
 			return this->err_needmoreparams(client, "PASS");
 		client->set_password(message.get_param()[0]);
 	}
-
 	else if (message.get_command() == "JOIN") {
 		if (message.get_param().size() == 0)
 			return this->err_needmoreparams(client, "JOIN");
-
-//	std::cout<<"IN JOIN 2\n";
-		std::string temp = (message.get_param())[0];
-		std::string chan_name;
-		size_t f;
-		while(!temp.empty())
-		{
-//	std::cout<<"IN JOIN 3\n";
-			f = temp.find(',');
-
-//	std::cout<<"IN JOIN 4\n";
-
-//	std::cout<<"IN JOIN 3.4\n";
-			if (f != std::string::npos)
-			{
-//	std::cout<<"IN JOIN 3.3\n";
-
-				chan_name = temp.substr(f);
-				temp.erase(f+1);
-			}
-			else
-			{
-//	std::cout<<"IN JOIN 4 "<<temp<<"\n";
-				chan_name = temp;
-				temp.clear();
-
-//	std::cout<<"IN JOIN 4.4\n";
-			}
-			if (Channel::invalid_channel_name(chan_name)) {
-				this->err_nosuchchannel(client, chan_name);
-				continue ;
-			}
-			join_cmd(client, chan_name);
-
-// 			if(	join_cmd(client,chan_name))
-// 			{
-
-// //	std::cout<<"IN JOIN 5\n";
-// 				rpl_join(client,find_channel_by_name(chan_name));
-// 				rpl_notopic(client,find_channel_by_name(chan_name));
-// 				rpl_namreply(client,find_channel_by_name(chan_name));
-// 			}
-// 			else
-// 			{
-// 				//bug creating chan
-// 				std::cout<<"Bug creating chan\n";
-// 			}
-
-//	std::cout<<"IN JOIN 6\n";
-		}
-
+		parse_exe_join(client, message);
 	}
 	else if (message.get_command() == "PRIVMSG" || message.get_command() == "NOTICE") {
 		if (message.get_param().size() == 0)
@@ -177,6 +126,32 @@ void Server::receive_message(int sockfd, Message const & message) {
 		if (message.get_param().size() < 1)
 			return this->err_needmoreparams(client, "PART");
 		this->part_cmd(client, message);
+	}
+}
+
+void	Server::parse_exe_join(Client * client, Message const & message)
+{
+	std::string temp = (message.get_param())[0];
+	std::string chan_name;
+	size_t f;
+	while(!temp.empty())
+	{
+		f = temp.find(',');
+		if (f != std::string::npos)
+		{
+			chan_name = temp.substr(f);
+			temp.erase(f+1);
+		}
+		else
+		{
+			chan_name = temp;
+			temp.clear();
+		}
+		if (Channel::invalid_channel_name(chan_name)) {
+			this->err_nosuchchannel(client, chan_name);
+			continue ;
+		}
+		join_cmd(client, chan_name);
 	}
 }
 
