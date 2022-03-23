@@ -32,6 +32,8 @@ typedef std::vector<Client const *>::const_iterator client_iterator;
 void Channel::remove_client(Client * client) {
 	remove_from_vector(client, this->clients);
 	remove_from_vector(client, this->opers);
+	if (this->size() == 0)
+		this->server.remove_channel(this);
 }
 
 std::string Channel::op_cli_message() const {
@@ -72,6 +74,27 @@ bool Channel::contains_client(Client const * client) const {
 	return is_in_vector(client, this->opers) || is_in_vector(client, this->clients);
 }
 
+void	Channel::invite_cmd_channel(Client * client, std::vector<std::string> param)
+{
+	std::cout<<"DEBG Invte cnd channel 1\n";
+	Client * target = server.find_client_by_nick(param[0]);
+	std::cout<<"DEBG Invte cnd channel 2\n";
+	if (!is_invite_only)
+		return;
+	std::cout<<"DEBG Invte cnd channel 3\n";
+	if (!contains_client(client))
+		return server.err_notonchannel(client,this);
+	std::cout<<"DEBG Invte cnd channel 4\n";
+	if (contains_client(target))
+		return server.err_useronchannel(client,this,target);
+	std::cout<<"DEBG Invte cnd channel 5\n";
+	if (!is_operator(client))
+		return server.err_chanoprivsneeded(client, this);
+	std::cout<<"DEBG Invte cnd channel 6\n";
+	invited.push_back(target);
+	server.rpl_inviting(client,this,target);
+}
+
 void	Channel::mode_cmd_channel(Client * client, Message const & message)
 {
 	std::vector<std::string> temp_param = message.get_param();
@@ -96,15 +119,15 @@ void	Channel::mode_cmd_channel(Client * client, Message const & message)
 					//kicktodo
 				}
 				else
-				 	remove_from_vector(temp_client , banned);
+					remove_from_vector(temp_client , banned);
 			}
 			else
-				{
-					if(signe)
-						opers.push_back(temp_client);	
-					else
-				 		remove_from_vector(temp_client , opers);
-				}
+			{
+				if(signe)
+					opers.push_back(temp_client);	
+				else
+					remove_from_vector(temp_client , opers);
+			}
 		}
 		else if (*it == 'i')
 		{
@@ -128,9 +151,20 @@ void	Channel::mode_cmd_channel(Client * client, Message const & message)
 
 std::vector<Client const *> const & Channel::get_invited_vec() const 
 {
-		return invited;
+	return invited;
 }
 std::vector<Client const *> const &  Channel::get_operators() const 
 {
-		return opers;
+	return opers;
+}
+bool Channel::is_operator(Client const * client) const {
+	return is_in_vector(client, this->opers);
+}
+
+bool Channel::is_normal_user(Client const * client) const {
+	return is_in_vector(client, this->clients);
+}
+
+std::size_t Channel::size() const {
+	return this->clients.size() + this->opers.size();
 }

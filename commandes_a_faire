@@ -6,10 +6,11 @@
 - NOTICE
 - JOIN
 
-- OPER
-- QUIT
 - PART
 - KICK
+
+- OPER
+- QUIT
 - MODE (channel)
 
 - MODE
@@ -317,7 +318,9 @@
    :WiZ!jto@tolsun.oulu.fi PART #playzone :I lost
                                    ; User WiZ leaving channel
                                    "#playzone" with the message "I
-                                   lost".3.2.3 Channel mode message
+                                   lost".
+
+3.2.3 Channel mode message
 
       Command: MODE
    Parameters: <channel> *( ( "-" / "+" ) *<modes> *<modeparams> )

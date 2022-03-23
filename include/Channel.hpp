@@ -32,7 +32,12 @@ public:
 	std::string op_cli_message() const;
 	void forward_message(Client const * src, std::string const & content) const;
 	bool contains_client(Client const * client) const;
-	void	mode_cmd_channel(Client * client, Message const & message);
+	void mode_cmd_channel(Client * client, Message const & message);
+	void invite_cmd_channel(Client * client, std::vector<std::string> param);
+	bool is_operator(Client const * client) const;
+	bool is_normal_user(Client const * client) const;
+	std::size_t size() const;
+
 private:
 	Server & server;
 	std::vector<Client const *> opers;
