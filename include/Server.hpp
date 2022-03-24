@@ -12,6 +12,8 @@ class Server {
 public:
 	Server(std::string const & name, std::string const & version, std::string const & password);
 
+	static void parse_one_comma_list(std::vector<std::string> & args, std::vector<std::string> * result_vector);
+
 	void new_client(int sockfd, struct sockaddr_in addr);
 	void remove_client(Client * client);
 	void remove_client_sockfd(int sockfd);

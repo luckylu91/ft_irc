@@ -1,4 +1,4 @@
-SRCS = $(wildcard src/*.cpp)
+SRCS = $(wildcard src/*.cpp) $(wildcard src/server/*.cpp)
 HEADERS = $(wildcard include/*.hpp)
 OBJS = $(SRCS:src/%.cpp=obj/%.o)
 NAME = ft_irc
@@ -9,11 +9,11 @@ all: $(NAME)
 $(NAME): $(OBJS) | $(HEADERS)
 	g++ -o $@ $^ $(CFLAGS)
 
-obj/%.o: src/%.cpp | obj
+obj/%.o: src/%.cpp | obj obj/server
 	g++ -c -o $@ $^ $(CFLAGS)
 
-obj:
-	mkdir obj/
+obj obj/server:
+	mkdir -p obj/server
 
 clean:
 	rm -rf obj/
