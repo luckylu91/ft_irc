@@ -144,7 +144,7 @@ void	Server::invite_cmd(Client *client,Message const & message)
 		channel = this->find_channel_by_name(temp_param[1]);
 		channel->invite_cmd_channel(client,temp_param);
 		}
-		catch (NoSuchClientNickException &) 
+		catch (NoSuchClientNickException &)
 		{
 			this->err_nosuchnick(client, temp_param[2]);
 		}
@@ -168,7 +168,7 @@ void	Server::mode_cmd(Client * client, Message const & message)
 		{
 			this->err_nosuchchannel(client, temp_param[0]);
 		}
-		catch (NoSuchClientNickException &) 
+		catch (NoSuchClientNickException &)
 		{
 			this->err_nosuchnick(client, temp_param[2]);
 		}
@@ -640,32 +640,14 @@ void Server::err_badchanmask(Client const * client, Channel const * channel) con
 	this->send_message(client, m);
 }
 
-void Server::err_useronchannel(Client const * client, Channel const * channel, Client const * target) const 
+void Server::err_useronchannel(Client const * client, Channel const * channel, Client const * target) const
 {
 	Message m = this->base_message(client, ERR_USERONCHANNEL);
 	m.add_param(target->get_nick());
 	m.add_param(channel->get_name());
 	m.add_param("is already on channel");
 }
-bool SameNick::operator()(std::string const & nick, Client const * client) {
-	return nick == client->get_nick();
-}
 
-bool SameSockfd::operator()(int sockfd, Client const * client) {
-	return sockfd == client->get_sockfd();
-}
-
-bool SameChannelName::operator()(std::string const & name, Channel const * channel) {
-	return name == channel->get_name();
-}
-
-void RemoveClientFromChannel::operator()(Client * client, Channel * channel) {
-	channel->remove_client(client);
-}
-
-void RemoveChannelFromClient::operator()(Channel * channel, Client * client) {
-	client->remove_channel(channel);
-}
 void Server::err_cannotsendtochan(Client const * client, std::string const & channel_name) const {
 	Message m = this->base_message(client, ERR_CANNOTSENDTOCHAN);
 	m.add_param(channel_name);

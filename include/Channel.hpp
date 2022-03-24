@@ -26,8 +26,8 @@ public:
 	void remove_client(Client * client);
 	std::string get_name() const { return this->name; }
 	bool get_is_invite_only() const { return this->is_invite_only; }
-	std::vector<Client const *> const & get_invited_vec() const ;
-	std::vector<Client const *>const & get_operators() const ;
+	std::vector<Client const *> const & get_invited_vec() const { return this->invited };
+	std::vector<Client const *>const & get_operators() const { return this->opers };
 	std::vector<Client const *> & get_clients() { return this->clients; }
 	std::string op_cli_message() const;
 	// void forward_message(Client const * src, std::string const & content) const;

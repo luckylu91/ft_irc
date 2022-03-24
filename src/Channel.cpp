@@ -121,7 +121,7 @@ void	Channel::mode_cmd_channel(Client * client, Message const & message)
 			{
 				if(signe)
 				{
-					banned.push_back(temp_client);	
+					banned.push_back(temp_client);
 					//kicktodo
 				}
 				else
@@ -130,7 +130,7 @@ void	Channel::mode_cmd_channel(Client * client, Message const & message)
 			else
 			{
 				if(signe)
-					opers.push_back(temp_client);	
+					opers.push_back(temp_client);
 				else
 					remove_from_vector(temp_client , opers);
 			}
@@ -155,14 +155,6 @@ void	Channel::mode_cmd_channel(Client * client, Message const & message)
 	}
 }
 
-std::vector<Client const *> const & Channel::get_invited_vec() const 
-{
-	return invited;
-}
-std::vector<Client const *> const &  Channel::get_operators() const 
-{
-	return opers;
-}
 bool Channel::is_operator(Client const * client) const {
 	return is_in_vector(client, this->opers);
 }
