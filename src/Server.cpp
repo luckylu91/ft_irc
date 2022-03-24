@@ -589,7 +589,6 @@ void Server::err_chanoprivsneeded(Client const * client,Channel const * channel)
 	m.add_param("You're not channel operator");
 	this->send_message(client, m);
 }
-
 void Server::err_notexttosend(Client const * client) const {
 	Message m = this->base_message(client, ERR_NOTEXTTOSEND);
 	m.add_param("No text to send");
@@ -601,17 +600,10 @@ void Server::err_nosuchchannel(Client const * client, std::string const & channe
 	m.add_param("No such channel");
 	this->send_message(client, m);
 }
-
 void Server::err_inviteonlychan(Client const * client, std::string const & channel_name) const {
 	Message m = this->base_message(client, ERR_INVITEONLYCHAN);
 	m.add_param(channel_name);
 	m.add_param("Cannot join channel (+i)");
-}
-void Server::err_chanoprivsneeded(Client const * client, Channel const * channel) const {
-	Message m = this->base_message(client, ERR_CHANOPRIVSNEEDED);
-	m.add_param(channel->get_name());
-	m.add_param("You're not channel operator");
-	this->send_message(client, m);
 }
 void Server::err_unknownmode(Client const * client, std::string const & flag,std::string const & channel_name) const {
 	Message m = this->base_message(client,ERR_UNKNOWNMODE);
@@ -619,7 +611,6 @@ void Server::err_unknownmode(Client const * client, std::string const & flag,std
 	m.add_param("is unknown mode char to me for");
 	m.add_param(channel_name);
 }
-
 void Server::err_usernotinchannel(Client const * client, std::string const & nick, Channel const * channel) const {
 	Message m = this->base_message(client, ERR_USERNOTINCHANNEL);
 	m.add_param(nick);
@@ -639,15 +630,12 @@ void Server::err_badchanmask(Client const * client, Channel const * channel) con
 	m.add_param("Bad Channel Mask");
 	this->send_message(client, m);
 }
-
-void Server::err_useronchannel(Client const * client, Channel const * channel, Client const * target) const
-{
+void Server::err_useronchannel(Client const * client, Channel const * channel, Client const * target) const {
 	Message m = this->base_message(client, ERR_USERONCHANNEL);
 	m.add_param(target->get_nick());
 	m.add_param(channel->get_name());
 	m.add_param("is already on channel");
 }
-
 void Server::err_cannotsendtochan(Client const * client, std::string const & channel_name) const {
 	Message m = this->base_message(client, ERR_CANNOTSENDTOCHAN);
 	m.add_param(channel_name);
