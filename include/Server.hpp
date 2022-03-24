@@ -3,14 +3,17 @@
 #include <vector>
 #include <string>
 #include <exception>
+#include "Client.hpp"
 
 class Client;
 class Message;
 class Channel;
+class Bot;
 
 class Server {
 public:
 	Server(std::string const & name, std::string const & version, std::string const & password);
+	~Server();
 
 	// Utils
 	void new_client(int sockfd, struct sockaddr_in addr);
@@ -102,4 +105,5 @@ private:
 	std::vector<Client *> clients;
 	std::vector<Channel *> channels;
 	std::string creation_time_string;
+	Bot * bot;
 };

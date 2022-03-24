@@ -10,8 +10,13 @@ class Channel;
 class Message;
 
 class Client {
+protected:
+	Client(Server & server, std::string const & name):
+		server(server), nick(name), user_name(name), real_name("BOT"),
+		is_identified(true), is_user(true), is_nick(true) {}
 public:
 	Client(int sockfd, struct sockaddr_in addr, Server & server);
+	virtual ~Client() {}
 
 	static bool invalid_nick(std::string const & nick);
 
@@ -26,10 +31,10 @@ public:
 	void remove_channel(Channel const * channel);
 	Message base_privmsg() const;
 	// void send_message(Client const * dest, std::string const & content) const;
-	void receive_message(Message const & message) const;
 	std::vector<Client const *> related_clients() const;
+	virtual void receive_message(Message const & message) const;
 
-private:
+protected:
 	int sockfd;
 	struct sockaddr_in addr;
 	Server & server;

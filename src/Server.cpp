@@ -1,14 +1,15 @@
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Bot.hpp"
 #include "Channel.hpp"
 #include "Message.hpp"
 #include "utils.hpp"
 #include "errors.hpp"
-#include "Channel.hpp"
 #include "numeric_codes.hpp"
 #include <unistd.h>
 #include <ctime>
 #include <cstdio>
+#include <filesystem>
 
 typedef std::vector<Client *>::const_iterator client_iterator;
 typedef std::vector<Channel *>::const_iterator channel_iterator;
@@ -23,8 +24,21 @@ Server::Server(std::string const & name, std::string const & version, std::strin
 		time_t timestamp = time(NULL);
 		this->creation_time_string = ctime(&timestamp);
 		this->creation_time_string.erase(this->creation_time_string.find_last_not_of("\n") + 1);
+		this->bot = new Bot(*this, "bbot");
+		this->bot->parse_word_file("words_file.txt");
+		this->clients.push_back(static_cast<Client *>(this->bot));
 	}
 
+static void delete_one_client(Client * item) {
+	delete item;
+}
+static void delete_one_channel(Channel * item) {
+	delete item;
+}
+Server::~Server() {
+	std::for_each(this->clients.begin(), this->clients.end(), delete_one_client);
+	std::for_each(this->channels.begin(), this->channels.end(), delete_one_channel);
+}
 
 Client * Server::find_client_by_sockfd(int sockfd) const {
 	client_iterator it = find_in_vector<SameSockfd>(sockfd, this->clients);

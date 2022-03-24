@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <iostream>
+#include  <random>
+#include  <iterator>
 
 template <class T1, class T2, class BinaryPredicate, class ReturnType>
 struct ParametrizedUnaryFunction {
@@ -88,4 +90,14 @@ int add_if_no_in(A const & a, Vector & vec) {
 		std::cout<<"Debug message dans add_if_no_in (probablement Add_client) : a deja dans le vec_a";
 		return 1;
 	}
+}
+
+template<class Vector>
+typename Vector::value_type select_randomly(Vector const & vec) {
+	static std::random_device rd;
+	static std::mt19937 gen(rd());
+	std::uniform_int_distribution<> dis(0, std::distance(vec.begin(), vec.end()) - 1);
+	typename Vector::const_iterator start = vec.begin();
+	std::advance(start, dis(gen));
+	return *start;
 }
