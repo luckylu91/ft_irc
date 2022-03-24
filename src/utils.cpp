@@ -3,6 +3,11 @@
 #include <sstream>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <algorithm>
 
 std::string addr_string(struct sockaddr_in addr) {
 	std::stringstream ss;
@@ -57,3 +62,21 @@ void split(std::string const & buffer, char sep, std::vector<std::string> * resu
 	if (remaining.size() > 0)
 		result_vec->push_back(remaining);
 }
+
+void extract_lines(std::string const & file_name, std::vector<std::string> * lines) {
+	std::fstream fs;
+	std::string line;
+
+	fs.open(file_name, std::fstream::in);
+	if (fs.fail()) {
+		lines->push_back("ERR_WORDS_FILE");
+		return ;
+	}
+	while (std::getline(fs, line)) {
+		if (line.empty())
+			continue ;
+		lines->push_back(line);
+	}
+	fs.close();
+}
+

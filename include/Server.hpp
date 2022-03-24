@@ -12,22 +12,20 @@ class Server {
 public:
 	Server(std::string const & name, std::string const & version, std::string const & password);
 
-	// static void parse_one_comma_list(std::vector<std::string> & args, std::vector<std::string> * result_vector);
-
+	// Utils
 	void new_client(int sockfd, struct sockaddr_in addr);
 	void remove_client(Client * client);
 	void remove_client_sockfd(int sockfd);
 	void remove_channel(Channel * channel);
-	// Client * find_client_by_addr(struct sockaddr_in addr);
 	Client * find_client_by_sockfd(int sockfd) const;
 	Client * find_client_by_nick(std::string const & nick) const;
 	Client * find_clients_by_nickmask(std::string const & nickmask) const;
 	Channel * find_channel_by_name(std::string const & name) const;
 	bool try_password(std::string const & password) const;
 	bool nick_exists(std::string const & nick) const;
-	void send_message(Client const *, Message const & message) const;
 	void receive_message(int sockfd, Message const & message);
-	void welcome(Client const * client) const;
+
+	// Commands
 	void msg_cmd(std::string const & command, Client const * source, std::string const & msgtarget,
 		std::string const & message);
 	void join_cmd(Client * client, Message const & message);
@@ -42,8 +40,8 @@ public:
 	void part_one_cmd(Client * client, std::string const & channel_name, std::string const & part_message);
 	void list_cmd(Client const * client, Message const & message) const;
 
-	void	parse_exe_join(Client * client, Message const & message);
 	// Numeric responses
+	void send_message(Client const *, Message const & message) const;
 	Message base_message(Client const * client, std::string const & command) const;
 	Message base_message_no_nick(std::string const & command) const;
 
@@ -52,6 +50,7 @@ public:
 	void rpl_yourhost(Client const * client) const;
 	void rpl_created(Client const * client) const;
 	void rpl_myinfo(Client const * client) const;
+	void welcome(Client const * client) const;
 
 	//join
 	void rpl_join(Client const * client, Channel const * chan) const;
@@ -104,9 +103,3 @@ private:
 	std::vector<Channel *> channels;
 	std::string creation_time_string;
 };
-
-// ERR_NEEDMOREPARAMS
-// ERR_CHANOPRIVSNEEDED
-// ERR_USERNOTINCHANNEL
-// ERR_NOTONCHANNEL
-// ERR_BADCHANMASK

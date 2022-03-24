@@ -198,3 +198,5 @@ Message Server::base_message_no_nick(std::string const & command) const {
 	return message;
 }
 
+
+
