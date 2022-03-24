@@ -52,10 +52,7 @@ void Server::new_client(int sockfd, struct sockaddr_in addr) {
 	this->clients.push_back(client);
 }
 
-/////////////////////////////////////////
 void Server::remove_client(Client * client) {
-	// for_each_in_vector<NotifyQuitIfRelated>(client, this->clients);
-	// for_each_in_vector<NotifyQuit>(client, client->related_clients());
 	this->rpl_quit(client);
 	for_each_in_vector<RemoveClientFromChannel>(client, this->channels);
 	remove_from_vector(client, this->clients);
@@ -80,7 +77,7 @@ bool Server::try_password(std::string const & pass) const {
 void Server::send_message(Client const * client, Message const & message) const {
 	std::string message_str = message.to_string();
 	std::cout << "Sending message  '" << special_string(message.to_string()) << "'" << std::endl;
-	std::cout<<"debug dans cliend.cpp send message\n client = "<<client->get_nick()<<"sockfd"<<client->get_sockfd()<<std::endl;
+// 	std::cout<<"debug dans cliend.cpp send message\n client = "<<client->get_nick()<<"sockfd"<<client->get_sockfd()<<std::endl;
 
 	int n = write(client->get_sockfd(), message_str.c_str(), message_str.size());
 	// std::cout<<"debug dans send message string = "<<message_str.c_str()<<" n ="<<n<<std::endl;
@@ -126,12 +123,22 @@ void Server::receive_message(int sockfd, Message const & message) {
 	else if (message.get_command() == "MODE") {
 		if (message.get_param().size() < 2)
 			return this->err_needmoreparams(client, "MODE");
-		mode_cmd(client, message);
+		this->mode_cmd(client, message);
 	}
 	else if (message.get_command() == "INVITE") {
 		if (message.get_param().size() < 2)
-			return this->err_needmoreparams(client, "invite");
-		invite_cmd(client, message);
+			return this->err_needmoreparams(client, "INVITE");
+		this->invite_cmd(client, message);
+	}
+	else if (message.get_command() == "PART") {
+		if (message.get_param().size() < 1)
+			return this->err_needmoreparams(client, "PART");
+		this->part_cmd(client, message);
+	}
+	else if (message.get_command() == "KICK") {
+		if (message.get_param().size() < 2)
+			return this->err_needmoreparams(client, "KICK");
+		this->kick_cmd(client, message);
 	}
 }
 
@@ -194,19 +201,19 @@ void	Server::parse_exe_join(Client * client, Message const & message)
 	size_t find_value;
 	while(!temp.empty())
 	{
-		std::cout<<"debug dans parse "<<temp<<"\n";
+// 		std::cout<<"debug dans parse "<<temp<<"\n";
 		find_value = temp.find(',');
 		if (find_value != std::string::npos)
 		{
 			chan_name = temp.substr(0,find_value);
 
-		std::cout<<"debug dans parse chan name1"<<chan_name<<"\n";
+// 		std::cout<<"debug dans parse chan name1"<<chan_name<<"\n";
 			temp.erase(0,find_value+1);
 		}
 		else
 		{
 			chan_name = temp;
-		std::cout<<"debug dans parse chan name2"<<chan_name<<"\n";
+// 		std::cout<<"debug dans parse chan name2"<<chan_name<<"\n";
 			temp.clear();
 		}
 		if (Channel::invalid_channel_name(chan_name)) {
@@ -215,7 +222,7 @@ void	Server::parse_exe_join(Client * client, Message const & message)
 		}
 
 
-		std::cout<<"debug dans parse chan name3"<<chan_name<<"\n";
+// 		std::cout<<"debug dans parse chan name3"<<chan_name<<"\n";
 		join_cmd(client, chan_name);
 	}
 }
@@ -327,8 +334,7 @@ void Server::part_one_cmd(Client * client, std::string const & channel_name, std
 	Channel * channel = try_action_on_channel_name(client, channel_name);
 	if (channel == NULL)
 		return ;
-	this->rpl_part(client, channel, part_message);
-	channel->remove_client(client);
+	this->rpl_part_and_remove(client, channel, part_message);
 	// this->msg_channel(client, channel, part_message);
 }
 
@@ -364,8 +370,7 @@ void Server::kick_one_cmd(Client * src, std::string const & channel_name,
 		Client * dest = this->find_client_by_nick(dest_name);
 		if (!channel->contains_client(dest))
 			return this->err_usernotinchannel(src, dest_name, channel);
-		channel->remove_client(dest);
-		this->rpl_kick(src, dest, channel, kick_message);
+		this->rpl_kick_and_remove(src, dest, channel, kick_message);
 		// this->part_one_cmd(dest, channel_name, part_message);
 	}
 	catch (NoSuchClientException &) {
@@ -477,16 +482,17 @@ void Server::rpl_inviting(Client const * client, Channel const * channel,Client 
 }
 // PART & KICK
 
-void Server::rpl_part(Client const * client, Channel const * channel, std::string const & part_message) const {
+void Server::rpl_part_and_remove(Client * client, Channel * channel, std::string const & part_message) const {
 	Message m;
 	m.set_source(client->name());
 	m.set_command("PART");
 	m.add_param(channel->get_name());
 	m.add_param(part_message);
 	channel->forward_message(m);
+	channel->remove_client(client);
 }
 
-void Server::rpl_kick(Client const * src, Client const * dest, Channel const * channel, std::string const & kick_message) const {
+void Server::rpl_kick_and_remove(Client const * src, Client * dest, Channel * channel, std::string const & kick_message) const {
 	Message m;
 	m.set_source(src->name());
 	m.set_command("KICK");
@@ -494,6 +500,7 @@ void Server::rpl_kick(Client const * src, Client const * dest, Channel const * c
 	m.add_param(dest->name());
 	m.add_param(kick_message);
 	channel->forward_message(m);
+	channel->remove_client(dest);
 }
 
 // PRIVMSG & NOTICE

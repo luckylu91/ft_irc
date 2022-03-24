@@ -11,9 +11,9 @@ extern int sockfd;
 
 void sig_handler(int sig_code) {
 	if (sig_code == SIGINT) {
-		std::cout << "debug: ^C pressed" << std::endl;
+// 		std::cout << "debug: ^C pressed" << std::endl;
 		if (sockfd > 0) {
-			std::cout << "debug: socket closed" << std::endl;
+// 			std::cout << "debug: socket closed" << std::endl;
 			close(sockfd);
 			exit(0);
 		}

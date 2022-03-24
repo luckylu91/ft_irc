@@ -60,8 +60,8 @@ public:
 	void rpl_inviting(Client const * client, Channel const * channel,Client const * target ) const;
 	// errors
 	//kick & part
-	void rpl_part(Client const * client, Channel const * channel, std::string const & part_message) const;
-	void rpl_kick(Client const * src, Client const * dest, Channel const * channel, std::string const & kick_message) const;
+	void rpl_part_and_remove(Client * client, Channel * channel, std::string const & part_message) const;
+	void rpl_kick_and_remove(Client const * src, Client * dest, Channel * channel, std::string const & kick_message) const;
 	//privmsg & notice
 	void rpl_msg(std::string const & command, Client const * src, Channel const * channel, std::string const & content) const;
 	void rpl_msg(std::string const & command, Client const * src, Client const * dest, std::string const & content) const;
