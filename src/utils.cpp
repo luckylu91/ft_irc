@@ -33,3 +33,27 @@ std::string special_string(std::string const & s) {
 	return ss.str();
 }
 
+std::string split_return_remaining(std::string const & buffer, char sep, std::vector<std::string> * result_vec) {
+	std::size_t start, stop;
+	std::string token;
+
+	start = 0;
+	while (start < buffer.size()) {
+		stop = buffer.find(sep, start);
+		if (stop == std::string::npos) {
+			return buffer.substr(start, std::string::npos);
+		}
+		if (stop > start) {
+			token = buffer.substr(start, stop);
+			result_vec->push_back(token);
+		}
+		start = stop + 1;
+	}
+	return std::string();
+}
+
+void split(std::string const & buffer, char sep, std::vector<std::string> * result_vec) {
+	std::string remaining = split_return_remaining(buffer, sep, result_vec);
+	if (remaining.size() > 0)
+		result_vec->push_back(remaining);
+}

@@ -107,7 +107,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 	else if (message.get_command() == "JOIN") {
 		if (message.get_param().size() == 0)
 			return this->err_needmoreparams(client, "JOIN");
-		parse_exe_join(client, message);
+		this->join_cmd(client, message);
 	}
 	else if (message.get_command() == "PRIVMSG" || message.get_command() == "NOTICE") {
 		if (message.get_param().size() == 0)
@@ -140,23 +140,26 @@ void Server::receive_message(int sockfd, Message const & message) {
 			return this->err_needmoreparams(client, "KICK");
 		this->kick_cmd(client, message);
 	}
-}
-
-void Server::parse_one_comma_list(std::vector<std::string> & args, std::vector<std::string> * result_vector) {
-	std::size_t i = 1;
-
-	if (args.size() == 0)
-		throw "Badly formated";
-	result_vector->push_back(args[0]);
-	while (i < args.size() && (args[i] == ",")) {
-		i++;
-		if (args.size() == i)
-			throw "Badly formated";
-		result_vector->push_back(args[i]);
-		i++;
+	else if (message.get_command() == "LIST") {
+		this->list_cmd(client, message);
 	}
-	args.erase(args.begin(), args.begin() + i);
 }
+
+// void Server::parse_one_comma_list(std::string const & args, std::vector<std::string> * result_vector) {
+// 	std::size_t i = 1;
+
+// 	if (args.size() == 0)
+// 		throw "Badly formated";
+// 	result_vector->push_back(args[0]);
+// 	while (i < args.size() && (args[i] == ",")) {
+// 		i++;
+// 		if (args.size() == i)
+// 			throw "Badly formated";
+// 		result_vector->push_back(args[i]);
+// 		i++;
+// 	}
+// 	args.erase(args.begin(), args.begin() + i);
+// }
 
 Channel * Server::try_action_on_channel_name(Client const * client, std::string const & channel_name) {
 	Channel * channel;

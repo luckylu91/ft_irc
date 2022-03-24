@@ -12,7 +12,7 @@ class Server {
 public:
 	Server(std::string const & name, std::string const & version, std::string const & password);
 
-	static void parse_one_comma_list(std::vector<std::string> & args, std::vector<std::string> * result_vector);
+	// static void parse_one_comma_list(std::vector<std::string> & args, std::vector<std::string> * result_vector);
 
 	void new_client(int sockfd, struct sockaddr_in addr);
 	void remove_client(Client * client);
@@ -30,7 +30,8 @@ public:
 	void welcome(Client const * client) const;
 	void msg_cmd(std::string const & command, Client const * source, std::string const & msgtarget,
 		std::string const & message);
-	void join_cmd(Client * c, std::string chan_name);
+	void join_cmd(Client * client, Message const & message);
+	void join_cmd_one(Client * client, std::string chan_name);
 	void mode_cmd(Client * client, Message const & message);
 	void invite_cmd(Client * client,Message const &message);
 	Channel * try_action_on_channel_name(Client const * client, std::string const & channel_name);
@@ -39,6 +40,7 @@ public:
 		std::string const & kick_message);
 	void part_cmd(Client * client, Message const & message);
 	void part_one_cmd(Client * client, std::string const & channel_name, std::string const & part_message);
+	void list_cmd(Client const * client, Message const & message) const;
 
 	void	parse_exe_join(Client * client, Message const & message);
 	// Numeric responses
@@ -69,6 +71,9 @@ public:
 	void rpl_msg(std::string const & command, Client const * src, Client const * dest, std::string const & content) const;
 	//quit
 	void rpl_quit(Client const * client, std::string const & quit_msg = std::string());
+	//list
+	void rpl_list(Client const * client, Channel const * channel) const;
+	void rpl_listend(Client const * client) const;
 	//errors
 	void err_needmoreparams(Client const * client, std::string const & command) const;
 	void err_alreadyregistred(Client const * client) const;

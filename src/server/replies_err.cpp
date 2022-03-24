@@ -6,9 +6,6 @@
 #include "utils_template.tpp"
 #include "numeric_codes.hpp"
 
-
-// ERR
-
 void Server::err_needmoreparams(Client const * client, std::string const & command) const {
 	Message m = this->base_message(client, ERR_NEEDMOREPARAMS);
 	m.add_param(command);

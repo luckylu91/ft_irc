@@ -39,6 +39,7 @@ public:
 	bool is_operator(Client const * client) const;
 	bool is_normal_user(Client const * client) const;
 	std::size_t size() const;
+	std::string size_str() const;
 
 private:
 	Server & server;

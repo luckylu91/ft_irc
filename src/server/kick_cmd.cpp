@@ -3,26 +3,21 @@
 #include "Client.hpp"
 #include "Message.hpp"
 #include "errors.hpp"
-#include "utils_template.tpp"
+#include "utils.hpp"
 
 
 void Server::kick_cmd(Client * src, Message const & message) {
-	std::vector<std::string> args = message.get_param();
+	std::vector<std::string> const & args = message.get_param();
 	std::vector<std::string> channels, dests;
 
-	try {
-		Server::parse_one_comma_list(args, &channels);
-		Server::parse_one_comma_list(args, &dests);
-		if (channels.size() > 1 && channels.size() != dests.size())
-			return ;
-		for (std::size_t i = 0; i < dests.size(); i++) {
-			std::string channel = channels.size() == 1 ? channels[0] : channels[i];
-			std::string dest = dests[i];
-			this->kick_one_cmd(src, channel, dest, args.size() > 0 ? args[0] : dest);
-		}
-	}
-	catch (...) {
+	split(args[0], ',', &channels);
+	split(args[1], ',', &dests);
+	if (channels.size() > 1 && channels.size() != dests.size())
 		return ;
+	for (std::size_t i = 0; i < dests.size(); i++) {
+		std::string channel = channels.size() == 1 ? channels[0] : channels[i];
+		std::string dest = dests[i];
+		this->kick_one_cmd(src, channel, dest, args.size() >= 3 ? args[2] : dest);
 	}
 }
 

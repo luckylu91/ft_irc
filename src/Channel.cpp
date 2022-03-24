@@ -5,6 +5,7 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 
 /*
    Channels names are strings (beginning with a '&' or '#' character) of
@@ -165,4 +166,10 @@ bool Channel::is_normal_user(Client const * client) const {
 
 std::size_t Channel::size() const {
 	return this->clients.size() + this->opers.size();
+}
+
+std::string Channel::size_str() const {
+	std::stringstream ss;
+	ss << this->size();
+	return ss.str();
 }

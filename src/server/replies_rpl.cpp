@@ -140,3 +140,19 @@ void Server::rpl_quit(Client const * client, std::string const & quit_msg) {
 		m.add_param("Client Quit");
 	for_each_in_vector(SendMessageToClientDifferent(client, m), client->related_clients());
 }
+
+// LIST
+
+void Server::rpl_list(Client const * client, Channel const * channel) const {
+	Message m = this->base_message(client, RPL_LIST);
+	m.add_param(channel->get_name());
+	m.add_param(channel->size_str());
+	// m.add_param(channel->topic());
+	this->send_message(client, m);
+}
+
+void Server::rpl_listend(Client const * client) const {
+	Message m = this->base_message(client, RPL_LISTEND);
+	m.add_param("End of LIST");
+	this->send_message(client, m);
+}
