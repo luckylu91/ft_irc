@@ -11,7 +11,7 @@ void SendMessageToClient::operator()(Message const & message, Client const * cli
 
 void SendMessageToClientDifferent::operator()(Client const * client) {
 	if (client != this->sender)
-		client->receive_message(message);
+		client->receive_message(this->message);
 }
 
 bool SameNick::operator()(std::string const & nick, Client const * client) {

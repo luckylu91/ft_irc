@@ -3,9 +3,11 @@
 #include "Channel.hpp"
 #include "Server.hpp"
 #include "Message.hpp"
+#include "errors.hpp"
 #include "utils.hpp"
 #include <sstream>
 #include <iostream>
+#include <unistd.h>
 
 
 // special = "[", "]", "\", "`", "_", "^", "{", "|", "}"
@@ -146,7 +148,11 @@ Message Client::base_privmsg() const {
 // }
 
 void Client::receive_message(Message const & message) const {
-	this->server.send_message(this, message);
+	std::string message_str = message.to_string();
+	std::cout << "Sending message  '" << special_string(message_str) << "'" << std::endl;
+	int n = write(this->sockfd, message_str.c_str(), message_str.size());
+	if (n < 0)
+		throw ClientSocketWriteException(this);
 }
 
 std::vector<Client const *> Client::related_clients() const {

@@ -10,6 +10,7 @@
 #include <ctime>
 #include <cstdio>
 #include <filesystem>
+#include <stdlib.h>
 
 typedef std::vector<Client *>::const_iterator client_iterator;
 typedef std::vector<Channel *>::const_iterator channel_iterator;
@@ -21,11 +22,12 @@ Server::Server(std::string const & name, std::string const & version, std::strin
 	clients(),
 	channels(),
 	creation_time_string() {
+		srand(time(NULL));
 		time_t timestamp = time(NULL);
 		this->creation_time_string = ctime(&timestamp);
 		this->creation_time_string.erase(this->creation_time_string.find_last_not_of("\n") + 1);
 		this->bot = new Bot(*this, "bbot");
-		this->bot->parse_word_file("words_file.txt");
+		this->bot->parse_word_file("liste_mots.txt");
 		this->clients.push_back(static_cast<Client *>(this->bot));
 	}
 
@@ -89,17 +91,10 @@ bool Server::try_password(std::string const & pass) const {
 }
 
 void Server::send_message(Client const * client, Message const & message) const {
-	std::string message_str = message.to_string();
-	std::cout << "Sending message  '" << special_string(message.to_string()) << "'" << std::endl;
-// 	std::cout<<"debug dans cliend.cpp send message\n client = "<<client->get_nick()<<"sockfd"<<client->get_sockfd()<<std::endl;
-
-	int n = write(client->get_sockfd(), message_str.c_str(), message_str.size());
-	// std::cout<<"debug dans send message string = "<<message_str.c_str()<<" n ="<<n<<std::endl;
-	if (n < 0)
-		throw ClientSocketWriteException(client);
+	client->receive_message(message);
 }
 
-void Server::receive_message(int sockfd, Message const & message) {
+void Server::receive_message(int sockfd, Message & message) {
 	Client * client = this->find_client_by_sockfd(sockfd);
 	std::cout << "Received message '" << special_string(message.to_string()) << "'" << std::endl;
 	// std::cout<<"IN receive_message\n";

@@ -26,7 +26,7 @@ public:
 	Channel * find_channel_by_name(std::string const & name) const;
 	bool try_password(std::string const & password) const;
 	bool nick_exists(std::string const & nick) const;
-	void receive_message(int sockfd, Message const & message);
+	void receive_message(int sockfd, Message & message);
 
 	// Commands
 	void msg_cmd(std::string const & command, Client const * source, std::string const & msgtarget,
@@ -68,9 +68,6 @@ public:
 	//kick & part
 	void rpl_part_and_remove(Client * client, Channel * channel, std::string const & part_message) const;
 	void rpl_kick_and_remove(Client const * src, Client * dest, Channel * channel, std::string const & kick_message) const;
-	//privmsg & notice
-	void rpl_msg(std::string const & command, Client const * src, Channel const * channel, std::string const & content) const;
-	void rpl_msg(std::string const & command, Client const * src, Client const * dest, std::string const & content) const;
 	//quit
 	void rpl_quit(Client const * client, std::string const & quit_msg = std::string());
 	//list

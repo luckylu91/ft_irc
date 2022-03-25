@@ -106,28 +106,6 @@ void Server::rpl_kick_and_remove(Client const * src, Client * dest, Channel * ch
 	channel->remove_client(dest);
 }
 
-// PRIVMSG & NOTICE
-
-void Server::rpl_msg(std::string const & command, Client const * src, Channel const * channel, std::string const & content) const {
-	Message m;
-	m.set_source(src->name());
-	m.set_command(command);
-	m.add_param(channel->get_name());
-	m.add_param(content);
-	channel->forward_message_except_sender(m, src);
-}
-
-void Server::rpl_msg(std::string const & command, Client const * src, Client const * dest, std::string const & content) const {
-	if (src == dest)
-		return ;
-	Message m;
-	m.set_source(src->name());
-	m.set_command(command);
-	m.add_param(dest->name());
-	m.add_param(content);
-	this->send_message(dest, m);
-}
-
 // QUIT
 
 void Server::rpl_quit(Client const * client, std::string const & quit_msg) {

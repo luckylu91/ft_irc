@@ -5,13 +5,17 @@
 #include <cstring>
 #include <iostream>
 
+class Client;
+
 class Message
 {
 public:
-	Message();
+	Message(): source_is_set(false), source_address(NULL) {}
 	void set_source(std::string const & source);
+	void set_source_address(Client const * source);
 	void set_command(std::string const & command);
 	std::string get_source() const { return this->source; }
+	Client const * get_source_address() const { return this->source_address; }
 	std::string get_command() const { return this->command; }
 	std::vector<std::string> const & get_param() const { return this->param; }
 	void add_param(std::string const & param);
@@ -27,5 +31,6 @@ private:
 	std::string source;
 	std::string command;
 	std::vector<std::string> param;
+	Client const * source_address;
 };
 
