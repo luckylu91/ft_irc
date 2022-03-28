@@ -46,6 +46,7 @@ int sockfd = -1;
 
 int main(int, char *argv[])
 {
+	signal(SIGINT, &sig_handler);
 	struct	kevent event;	 /* Event we want to monitor */
 	struct	kevent tevents[20];
 	struct	kevent tevent;
@@ -54,7 +55,7 @@ int main(int, char *argv[])
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 	Server server("LE_SERVER", "0.1", "root");
-	signal(SIGINT, &sig_handler);
+	server.new_bot("bbot", "liste_mots.txt");
 	if(setup_socket(option,  serv_addr,  cli_addr,   clilen,argv))
 		return 1;
 	kq = kqueue();
@@ -73,6 +74,7 @@ int main(int, char *argv[])
 				printf("Client has disconnected, sockfd = %d\n", client_sockfd);
 				close(tevent.ident);
 				server.remove_client_sockfd(static_cast<int>(tevent.ident));
+				Message::remove_connection_cache(sockfd);
 			}
 			else if (static_cast<int>(tevent.ident) == sockfd)
 			{
@@ -85,13 +87,13 @@ int main(int, char *argv[])
 			}
 			else
 			{
-
+				client_sockfd = static_cast<int>(tevent.ident);
 				bzero(buffer,256);
 				n = recv(tevent.ident,buffer,255,0);
 				if (n < 0)
 					error("ERROR reading from socket");
 				client_sockfd = static_cast<int>(tevent.ident);
-				Message::parse(buffer, &parsed_message);
+				Message::parse(buffer, &parsed_message, client_sockfd);
 				for (std::vector<Message>::iterator it = parsed_message.begin(); it != parsed_message.end(); it++)
 					server.receive_message(client_sockfd, *it);
 			}

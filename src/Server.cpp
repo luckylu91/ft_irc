@@ -26,9 +26,6 @@ Server::Server(std::string const & name, std::string const & version, std::strin
 		time_t timestamp = time(NULL);
 		this->creation_time_string = ctime(&timestamp);
 		this->creation_time_string.erase(this->creation_time_string.find_last_not_of("\n") + 1);
-		this->bot = new Bot(*this, "bbot");
-		this->bot->parse_word_file("liste_mots.txt");
-		this->clients.push_back(static_cast<Client *>(this->bot));
 	}
 
 static void delete_one_client(Client * item) {
@@ -40,6 +37,37 @@ static void delete_one_channel(Channel * item) {
 Server::~Server() {
 	std::for_each(this->clients.begin(), this->clients.end(), delete_one_client);
 	std::for_each(this->channels.begin(), this->channels.end(), delete_one_channel);
+}
+
+void Server::new_bot(std::string const & name, std::string const & file_name) {
+	Bot * bot = new Bot(*this, name);
+	bot->parse_word_file(file_name);
+	this->clients.push_back(static_cast<Client *>(bot));
+}
+
+void Server::new_client(int sockfd, struct sockaddr_in addr) {
+	Client * client = new Client(sockfd, addr, *this);
+	this->clients.push_back(client);
+}
+
+void Server::remove_client(Client * client) {
+	this->rpl_quit(client);
+	std::cout << "before remove client from channel" << std::endl;
+	for_each_in_vector<RemoveClientFromChannel>(client, this->channels);
+	remove_from_vector(client, this->clients);
+	std::cout << "before delete client" << std::endl;
+	delete client;
+}
+
+void Server::remove_client_sockfd(int sockfd) {
+	Client * client = this->find_client_by_sockfd(sockfd);
+	this->remove_client(client);
+}
+
+void Server::remove_channel(Channel * channel) {
+	for_each_in_vector<RemoveChannelFromClient>(channel, this->clients);
+	remove_from_vector(channel, this->channels);
+	delete channel;
 }
 
 Client * Server::find_client_by_sockfd(int sockfd) const {
@@ -61,29 +89,6 @@ Channel * Server::find_channel_by_name(std::string const & name) const {
 	if (it == this->channels.end())
 		throw NoSuchChannelNameException(name);
 	return *it;
-}
-
-void Server::new_client(int sockfd, struct sockaddr_in addr) {
-	Client * client = new Client(sockfd, addr, *this);
-	this->clients.push_back(client);
-}
-
-void Server::remove_client(Client * client) {
-	this->rpl_quit(client);
-	for_each_in_vector<RemoveClientFromChannel>(client, this->channels);
-	remove_from_vector(client, this->clients);
-	delete client;
-}
-
-void Server::remove_client_sockfd(int sockfd) {
-	Client * client = this->find_client_by_sockfd(sockfd);
-	this->remove_client(client);
-}
-
-void Server::remove_channel(Channel * channel) {
-	for_each_in_vector<RemoveChannelFromClient>(channel, this->clients);
-	remove_from_vector(channel, this->channels);
-	delete channel;
 }
 
 bool Server::try_password(std::string const & pass) const {
@@ -171,7 +176,7 @@ void Server::receive_message(int sockfd, Message & message) {
 // 			throw "Badly formated";
 // 		result_vector->push_back(args[i]);
 // 		i++;
-	
+
 
 // void Server::parse_one_comma_list(std::string const & args, std::vector<std::string> * result_vector) {
 // 	std::size_t i = 1;

@@ -16,6 +16,7 @@ public:
 	~Server();
 
 	// Utils
+	void new_bot(std::string const & name, std::string const & file_name);
 	void new_client(int sockfd, struct sockaddr_in addr);
 	void remove_client(Client * client);
 	void remove_client_sockfd(int sockfd);
@@ -108,5 +109,4 @@ private:
 	std::vector<Client *> clients;
 	std::vector<Channel *> channels;
 	std::string creation_time_string;
-	Bot * bot;
 };
