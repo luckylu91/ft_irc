@@ -52,8 +52,10 @@ void Server::new_client(int sockfd, struct sockaddr_in addr) {
 
 void Server::remove_client(Client * client) {
 	this->rpl_quit(client);
+	std::cout << "before remove client from channel" << std::endl;
 	for_each_in_vector<RemoveClientFromChannel>(client, this->channels);
 	remove_from_vector(client, this->clients);
+	std::cout << "before delete client" << std::endl;
 	delete client;
 }
 
