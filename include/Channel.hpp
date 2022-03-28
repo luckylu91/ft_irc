@@ -43,6 +43,7 @@ public:
 	bool is_normal_user(Client const * client) const;
 	std::size_t size() const;
 	void set_topic(std::string new_topic);
+	std::string size_str() const;
 
 private:
 	Server & server;

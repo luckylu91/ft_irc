@@ -68,8 +68,7 @@ void Server::err_norecipient(Client const * client, std::string const & command)
 	m.add_param("No recipient given (" + command + ")");
 	this->send_message(client, m);
 }
-
-void Server::err_chanoprivsneeded(Client const * client,Channel const * channel) const {
+void Server::err_chanoprivsneeded(Client const * client, Channel const * channel) const {
 	Message m = this->base_message(client, ERR_CHANOPRIVSNEEDED);
 	m.add_param(channel->get_name());
 	m.add_param("You're not channel operator");

@@ -4,3 +4,4 @@ exp/
 ft_irc
 obj/
 .vscode/
+*.py

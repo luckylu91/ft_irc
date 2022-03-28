@@ -4,15 +4,17 @@
 #include <iostream>
 #include <sstream>
 #include "Message.hpp"
+#include "utils.hpp"
 
 typedef std::vector<std::string>::const_iterator string_iterator;
-
-Message::Message(): source_is_set(false) {}
 
 
 void Message::set_source(std::string const & source) {
 	this->source = source;
 	this->source_is_set = true;
+}
+void Message::set_source_address(Client const * source) {
+	this->source_address = source;
 }
 void Message::set_command(std::string const & command) {
 	this->command = command;
@@ -73,38 +75,92 @@ void Message::parse(std::string input, std::vector<Message> *vec) {
 Message Message::parse_one(std::string s)
 {
 	Message message;
-	char * base = &s[0];
-	char *temp =  strtok(base," ");
-	if (temp[0] == ':')
-	{
-		message.set_source(temp);
-		temp =  strtok(NULL, " ");
-		if (temp != NULL)
-			message.set_command(base);
+	std::string tmp;
+	if (s[0] == ':') {
+		split_until(s, ' ', &tmp);
+		message.set_source(tmp);
 	}
-	else
-	{
-		message.set_command(base);
-	}
-	temp =  strtok(NULL," ");
-	while(temp != NULL)
-	{
-		if (temp[0] == ':')
-		{
-			message.param.push_back(temp);
-			temp =  strtok(NULL," ");
-			while(temp!= NULL)
-			{
-				(message.param.back()).append(temp);
-				temp =  strtok(NULL," ");
-			}
-			return message;
+	bool param_began = false;
+	while (s.size() > 0 && s[0] != ':') {
+		split_until(s, ' ', &tmp);
+		if (!param_began) {
+			message.set_command(tmp);
+			param_began = true;
 		}
-		message.param.push_back(temp);
-		temp =  strtok(NULL," ");
+		else
+			message.add_param(tmp);
 	}
+	if (s.size() > 0) {
+		std::size_t index_end = s.find("\r\n");
+		message.add_param(s.substr(1, index_end));
+	}
+	// char * base = &s[0];
+	// char *temp =  strtok(base," ");
+	// if (temp[0] == ':')
+	// {
+	// 	message.set_source(temp);
+	// 	temp =  strtok(NULL, " ");
+	// 	if (temp != NULL)
+	// 		message.set_command(base);
+	// }
+	// else
+	// {
+	// 	message.set_command(base);
+	// }
+	// temp =  strtok(NULL," ");
+	// while(temp != NULL)
+	// {
+	// 	if (temp[0] == ':')
+	// 	{
+	// 		message.param.push_back(temp);
+	// 		temp =  strtok(NULL," ");
+	// 		while(temp!= NULL)
+	// 		{
+	// 			(message.param.back()).append(temp);
+	// 			temp =  strtok(NULL," ");
+	// 		}
+	// 		return message;
+	// 	}
+	// 	message.param.push_back(temp);
+	// 	temp =  strtok(NULL," ");
+	// }
 	return message;
 }
+// Message Message::parse_one(std::string s)
+// {
+// 	Message message;
+// 	char * base = &s[0];
+// 	char *temp =  strtok(base," ");
+// 	if (temp[0] == ':')
+// 	{
+// 		message.set_source(temp);
+// 		temp =  strtok(NULL, " ");
+// 		if (temp != NULL)
+// 			message.set_command(base);
+// 	}
+// 	else
+// 	{
+// 		message.set_command(base);
+// 	}
+// 	temp =  strtok(NULL," ");
+// 	while(temp != NULL)
+// 	{
+// 		if (temp[0] == ':')
+// 		{
+// 			message.param.push_back(temp);
+// 			temp =  strtok(NULL," ");
+// 			while(temp!= NULL)
+// 			{
+// 				(message.param.back()).append(temp);
+// 				temp =  strtok(NULL," ");
+// 			}
+// 			return message;
+// 		}
+// 		message.param.push_back(temp);
+// 		temp =  strtok(NULL," ");
+// 	}
+// 	return message;
+// }
 
 static bool param_has_spaces(std::string const & str) {
 	return str.find(' ') != std::string::npos;

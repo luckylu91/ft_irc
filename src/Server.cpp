@@ -1,14 +1,16 @@
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Bot.hpp"
 #include "Channel.hpp"
 #include "Message.hpp"
 #include "utils.hpp"
 #include "errors.hpp"
-#include "Channel.hpp"
 #include "numeric_codes.hpp"
 #include <unistd.h>
 #include <ctime>
 #include <cstdio>
+#include <filesystem>
+#include <stdlib.h>
 
 typedef std::vector<Client *>::const_iterator client_iterator;
 typedef std::vector<Channel *>::const_iterator channel_iterator;
@@ -20,11 +22,25 @@ Server::Server(std::string const & name, std::string const & version, std::strin
 	clients(),
 	channels(),
 	creation_time_string() {
+		srand(time(NULL));
 		time_t timestamp = time(NULL);
 		this->creation_time_string = ctime(&timestamp);
 		this->creation_time_string.erase(this->creation_time_string.find_last_not_of("\n") + 1);
+		this->bot = new Bot(*this, "bbot");
+		this->bot->parse_word_file("liste_mots.txt");
+		this->clients.push_back(static_cast<Client *>(this->bot));
 	}
 
+static void delete_one_client(Client * item) {
+	delete item;
+}
+static void delete_one_channel(Channel * item) {
+	delete item;
+}
+Server::~Server() {
+	std::for_each(this->clients.begin(), this->clients.end(), delete_one_client);
+	std::for_each(this->channels.begin(), this->channels.end(), delete_one_channel);
+}
 
 Client * Server::find_client_by_sockfd(int sockfd) const {
 	client_iterator it = find_in_vector<SameSockfd>(sockfd, this->clients);
@@ -75,17 +91,10 @@ bool Server::try_password(std::string const & pass) const {
 }
 
 void Server::send_message(Client const * client, Message const & message) const {
-	std::string message_str = message.to_string();
-	std::cout << "Sending message  '" << special_string(message.to_string()) << "'" << std::endl;
-// 	std::cout<<"debug dans cliend.cpp send message\n client = "<<client->get_nick()<<"sockfd"<<client->get_sockfd()<<std::endl;
-
-	int n = write(client->get_sockfd(), message_str.c_str(), message_str.size());
-	// std::cout<<"debug dans send message string = "<<message_str.c_str()<<" n ="<<n<<std::endl;
-	if (n < 0)
-		throw ClientSocketWriteException(client);
+	client->receive_message(message);
 }
 
-void Server::receive_message(int sockfd, Message const & message) {
+void Server::receive_message(int sockfd, Message & message) {
 	Client * client = this->find_client_by_sockfd(sockfd);
 	std::cout << "Received message '" << special_string(message.to_string()) << "'" << std::endl;
 	// std::cout<<"IN receive_message\n";
@@ -107,7 +116,7 @@ void Server::receive_message(int sockfd, Message const & message) {
 	else if (message.get_command() == "JOIN") {
 		if (message.get_param().size() == 0)
 			return this->err_needmoreparams(client, "JOIN");
-		parse_exe_join(client, message);
+		this->join_cmd(client, message);
 	}
 	else if (message.get_command() == "PRIVMSG" || message.get_command() == "NOTICE") {
 		if (message.get_param().size() == 0)
@@ -145,23 +154,40 @@ void Server::receive_message(int sockfd, Message const & message) {
 			return this->err_needmoreparams(client, "KICK");
 		this->topic_cmd(client, message);
 	}
-}
-
-void Server::parse_one_comma_list(std::vector<std::string> & args, std::vector<std::string> * result_vector) {
-	std::size_t i = 1;
-
-	if (args.size() == 0)
-		throw "Badly formated";
-	result_vector->push_back(args[0]);
-	while (i < args.size() && (args[i] == ",")) {
-		i++;
-		if (args.size() == i)
-			throw "Badly formated";
-		result_vector->push_back(args[i]);
-		i++;
+	else if (message.get_command() == "LIST") {
+		this->list_cmd(client, message);
 	}
-	args.erase(args.begin(), args.begin() + i);
 }
+
+// void Server::parse_one_comma_list(std::vector<std::string> & args, std::vector<std::string> * result_vector) {
+// 	std::size_t i = 1;
+
+// 	if (args.size() == 0)
+// 		throw "Badly formated";
+// 	result_vector->push_back(args[0]);
+// 	while (i < args.size() && (args[i] == ",")) {
+// 		i++;
+// 		if (args.size() == i)
+// 			throw "Badly formated";
+// 		result_vector->push_back(args[i]);
+// 		i++;
+	
+
+// void Server::parse_one_comma_list(std::string const & args, std::vector<std::string> * result_vector) {
+// 	std::size_t i = 1;
+
+// 	if (args.size() == 0)
+// 		throw "Badly formated";
+// 	result_vector->push_back(args[0]);
+// 	while (i < args.size() && (args[i] == ",")) {
+// 		i++;
+// 		if (args.size() == i)
+// 			throw "Badly formated";
+// 		result_vector->push_back(args[i]);
+// 		i++;
+// 	}
+// 	args.erase(args.begin(), args.begin() + i);
+// }
 
 Channel * Server::try_action_on_channel_name(Client const * client, std::string const & channel_name) {
 	Channel * channel;
@@ -199,4 +225,6 @@ Message Server::base_message_no_nick(std::string const & command) const {
 	message.set_command(command);
 	return message;
 }
+
+
 
