@@ -22,7 +22,6 @@ public:
 	void add_param(std::string const & param);
 	void insert_param(std::size_t position, std::string const & param);
 	std::string to_string() const;
-	// static void parse(char *base, std::vector<Message> *vec);
 	static void parse(std::string input, std::vector<Message> *vec, int sockfd);
 	static Message parse_one(std::string s);
 	static void remove_connection_cache(int sockfd);
