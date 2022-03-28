@@ -54,6 +54,7 @@ int main(int, char *argv[])
 	char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
 	Server server("LE_SERVER", "0.1", "root");
+	server.new_bot("bbot", "liste_mots.txt");
 	signal(SIGINT, &sig_handler);
 	if(setup_socket(option,  serv_addr,  cli_addr,   clilen,argv))
 		return 1;

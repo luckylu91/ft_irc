@@ -26,9 +26,6 @@ Server::Server(std::string const & name, std::string const & version, std::strin
 		time_t timestamp = time(NULL);
 		this->creation_time_string = ctime(&timestamp);
 		this->creation_time_string.erase(this->creation_time_string.find_last_not_of("\n") + 1);
-		this->bot = new Bot(*this, "bbot");
-		this->bot->parse_word_file("liste_mots.txt");
-		this->clients.push_back(static_cast<Client *>(this->bot));
 	}
 
 static void delete_one_client(Client * item) {
@@ -42,25 +39,10 @@ Server::~Server() {
 	std::for_each(this->channels.begin(), this->channels.end(), delete_one_channel);
 }
 
-Client * Server::find_client_by_sockfd(int sockfd) const {
-	client_iterator it = find_in_vector<SameSockfd>(sockfd, this->clients);
-	if (it == this->clients.end())
-		throw NoSuchClientSockFdException(sockfd);
-	return *it;
-}
-
-Client * Server::find_client_by_nick(std::string const & nick) const {
-	client_iterator it = find_in_vector<SameNick>(nick, this->clients);
-	if (it == this->clients.end())
-		throw NoSuchClientNickException(nick);
-	return *it;
-}
-
-Channel * Server::find_channel_by_name(std::string const & name) const {
-	channel_iterator it = find_in_vector<SameChannelName>(name, this->channels);
-	if (it == this->channels.end())
-		throw NoSuchChannelNameException(name);
-	return *it;
+void Server::new_bot(std::string const & name, std::string const & file_name) {
+	Bot * bot = new Bot(*this, name);
+	bot->parse_word_file(file_name);
+	this->clients.push_back(static_cast<Client *>(bot));
 }
 
 void Server::new_client(int sockfd, struct sockaddr_in addr) {
@@ -84,6 +66,27 @@ void Server::remove_channel(Channel * channel) {
 	for_each_in_vector<RemoveChannelFromClient>(channel, this->clients);
 	remove_from_vector(channel, this->channels);
 	delete channel;
+}
+
+Client * Server::find_client_by_sockfd(int sockfd) const {
+	client_iterator it = find_in_vector<SameSockfd>(sockfd, this->clients);
+	if (it == this->clients.end())
+		throw NoSuchClientSockFdException(sockfd);
+	return *it;
+}
+
+Client * Server::find_client_by_nick(std::string const & nick) const {
+	client_iterator it = find_in_vector<SameNick>(nick, this->clients);
+	if (it == this->clients.end())
+		throw NoSuchClientNickException(nick);
+	return *it;
+}
+
+Channel * Server::find_channel_by_name(std::string const & name) const {
+	channel_iterator it = find_in_vector<SameChannelName>(name, this->channels);
+	if (it == this->channels.end())
+		throw NoSuchChannelNameException(name);
+	return *it;
 }
 
 bool Server::try_password(std::string const & pass) const {
@@ -171,7 +174,7 @@ void Server::receive_message(int sockfd, Message & message) {
 // 			throw "Badly formated";
 // 		result_vector->push_back(args[i]);
 // 		i++;
-	
+
 
 // void Server::parse_one_comma_list(std::string const & args, std::vector<std::string> * result_vector) {
 // 	std::size_t i = 1;
