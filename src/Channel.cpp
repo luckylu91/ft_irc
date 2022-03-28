@@ -14,6 +14,10 @@
    (^G or ASCII 7), or a comma (',' which is used as a list item
    separator by the protocol).
    */
+void Channel::set_topic(std::string new_topic)
+{
+	topic = new_topic;
+}
 
 bool Channel::invalid_channel_name(std::string const & name) {
 	char illegal_chars[] = {
@@ -57,14 +61,6 @@ std::string Channel::op_cli_message() const {
 	return r;
 }
 
-// void Channel::forward_message(Client const * src, std::string const & content) const {
-// 	Message message;
-// 	message.set_source(src->name());
-// 	message.add_param(this->get_name());
-// 	message.add_param(content);
-// 	this->forward_message(message);
-// }
-
 void Channel::forward_message(Message & message) const {
 	for_each_in_vector<SendMessageToClient>(message, this->clients);
 	for_each_in_vector<SendMessageToClient>(message, this->opers);
@@ -82,21 +78,15 @@ bool Channel::contains_client(Client const * client) const {
 
 void	Channel::invite_cmd_channel(Client * client, std::vector<std::string> param)
 {
-	std::cout<<"DEBG Invte cnd channel 1\n";
 	Client * target = server.find_client_by_nick(param[0]);
-	std::cout<<"DEBG Invte cnd channel 2\n";
 	if (!is_invite_only)
 		return;
-	std::cout<<"DEBG Invte cnd channel 3\n";
 	if (!contains_client(client))
 		return server.err_notonchannel(client,this);
-	std::cout<<"DEBG Invte cnd channel 4\n";
 	if (contains_client(target))
 		return server.err_useronchannel(client,this,target);
-	std::cout<<"DEBG Invte cnd channel 5\n";
 	if (!is_operator(client))
 		return server.err_chanoprivsneeded(client, this);
-	std::cout<<"DEBG Invte cnd channel 6\n";
 	invited.push_back(target);
 	server.rpl_inviting(client,this,target);
 }
@@ -108,7 +98,7 @@ void	Channel::mode_cmd_channel(Client * client, Message const & message)
 	Client * temp_client;
 	if (temp_param[1][0] == '+')
 		signe = 1;
-	else if (temp_param[1][0] == '+')
+	else if (temp_param[1][0] == '-')
 		signe = 0;
 	else
 		return;
@@ -120,17 +110,14 @@ void	Channel::mode_cmd_channel(Client * client, Message const & message)
 			if(*it == 'b')
 			{
 				if(signe)
-				{
-					banned.push_back(temp_client);
-					//kicktodo
-				}
+					add_if_no_in(temp_client, banned);
 				else
 					remove_from_vector(temp_client , banned);
 			}
 			else
 			{
 				if(signe)
-					opers.push_back(temp_client);
+					add_if_no_in(temp_client, opers);
 				else
 					remove_from_vector(temp_client , opers);
 			}

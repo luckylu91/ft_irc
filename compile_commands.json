@@ -1,0 +1,308 @@
+[
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/Message.o", 
+   "src/Message.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/Message.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/server/mode_cmd.o", 
+   "src/server/mode_cmd.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/server/mode_cmd.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/errors.o", 
+   "src/errors.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/errors.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/utils_predicates.o", 
+   "src/utils_predicates.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/utils_predicates.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/main.o", 
+   "src/main.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/main.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/Channel.o", 
+   "src/Channel.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/Channel.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/server/join_cmd.o", 
+   "src/server/join_cmd.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/server/join_cmd.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/server/kick_cmd.o", 
+   "src/server/kick_cmd.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/server/kick_cmd.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/utils.o", 
+   "src/utils.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/utils.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/server/invite_cmd.o", 
+   "src/server/invite_cmd.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/server/invite_cmd.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/server/part_cmd.o", 
+   "src/server/part_cmd.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/server/part_cmd.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/server/msg_cmd.o", 
+   "src/server/msg_cmd.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/server/msg_cmd.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/Server.o", 
+   "src/Server.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/Server.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/server/replies_rpl.o", 
+   "src/server/replies_rpl.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/server/replies_rpl.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/server/topic_cmd.o", 
+   "src/server/topic_cmd.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/server/topic_cmd.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/main_utils.o", 
+   "src/main_utils.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/main_utils.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/server/replies_err.o", 
+   "src/server/replies_err.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/server/replies_err.cpp"
+ }, 
+ {
+  "directory": "/Users/hgallien/Ongoing/ft_irc/ft_irc", 
+  "arguments": [
+   "g++", 
+   "-c", 
+   "-o", 
+   "obj/Client.o", 
+   "src/Client.cpp", 
+   "-Iinclude", 
+   "-Wall", 
+   "-Wextra", 
+   "-Werror", 
+   "-std=c++98", 
+   "-g"
+  ], 
+  "file": "src/Client.cpp"
+ }
+]

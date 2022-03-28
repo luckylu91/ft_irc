@@ -9,6 +9,16 @@
 
 // ERR
 
+#define ERR_BANNEDFROMCHAN "474"
+// "<channel> :Cannot join channel (+b)"
+//
+void Server::err_bannedfromchan(Client const * client, Channel const * channel) const{
+
+	Message m = this->base_message(client, ERR_BANNEDFROMCHAN);
+	m.add_param(channel->get_name());
+	m.add_param("Cannot join channel (+b)");
+	this->send_message(client, m);
+}
 void Server::err_needmoreparams(Client const * client, std::string const & command) const {
 	Message m = this->base_message(client, ERR_NEEDMOREPARAMS);
 	m.add_param(command);
@@ -76,9 +86,9 @@ void Server::err_nosuchchannel(Client const * client, std::string const & channe
 	m.add_param("No such channel");
 	this->send_message(client, m);
 }
-void Server::err_inviteonlychan(Client const * client, std::string const & channel_name) const {
+void Server::err_inviteonlychan(Client const * client, Channel const * channel) const {
 	Message m = this->base_message(client, ERR_INVITEONLYCHAN);
-	m.add_param(channel_name);
+	m.add_param(channel->get_name());
 	m.add_param("Cannot join channel (+i)");
 }
 void Server::err_unknownmode(Client const * client, std::string const & flag,std::string const & channel_name) const {

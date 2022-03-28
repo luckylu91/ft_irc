@@ -26,8 +26,11 @@ public:
 	void remove_client(Client * client);
 	std::string get_name() const { return this->name; }
 	bool get_is_invite_only() const { return this->is_invite_only; }
+	bool get_is_topic_protected() const { return this->is_topic_protected; }
+	std::string get_topic()const {return this->topic;};
 	std::vector<Client const *> const & get_invited_vec() const { return this->invited; };
 	std::vector<Client const *>const & get_operators() const { return this->opers; };
+	std::vector<Client const *>const & get_banned_vec() const { return this->banned; };
 	std::vector<Client const *> & get_clients() { return this->clients; }
 	std::string op_cli_message() const;
 	// void forward_message(Client const * src, std::string const & content) const;
@@ -39,6 +42,7 @@ public:
 	bool is_operator(Client const * client) const;
 	bool is_normal_user(Client const * client) const;
 	std::size_t size() const;
+	void set_topic(std::string new_topic);
 
 private:
 	Server & server;
@@ -47,6 +51,7 @@ private:
 	std::vector<Client const *> banned;
 	std::vector<Client const *> invited;
 	std::string name;
+	std::string topic;
 	bool is_invite_only;
 	bool is_private;
 	bool is_secret;

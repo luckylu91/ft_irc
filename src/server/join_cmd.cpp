@@ -12,19 +12,19 @@ void	Server::parse_exe_join(Client * client, Message const & message)
 	size_t find_value;
 	while(!temp.empty())
 	{
-// 		std::cout<<"debug dans parse "<<temp<<"\n";
+		// 		std::cout<<"debug dans parse "<<temp<<"\n";
 		find_value = temp.find(',');
 		if (find_value != std::string::npos)
 		{
 			chan_name = temp.substr(0,find_value);
 
-// 		std::cout<<"debug dans parse chan name1"<<chan_name<<"\n";
+			// 		std::cout<<"debug dans parse chan name1"<<chan_name<<"\n";
 			temp.erase(0,find_value+1);
 		}
 		else
 		{
 			chan_name = temp;
-// 		std::cout<<"debug dans parse chan name2"<<chan_name<<"\n";
+			// 		std::cout<<"debug dans parse chan name2"<<chan_name<<"\n";
 			temp.clear();
 		}
 		if (Channel::invalid_channel_name(chan_name)) {
@@ -33,11 +33,24 @@ void	Server::parse_exe_join(Client * client, Message const & message)
 		}
 
 
-// 		std::cout<<"debug dans parse chan name3"<<chan_name<<"\n";
+		// 		std::cout<<"debug dans parse chan name3"<<chan_name<<"\n";
 		join_cmd(client, chan_name);
 	}
 }
-
+int Server::validity_test(Client * client, Channel * channel)
+{
+	if(is_in_vector(client, channel->get_banned_vec()))
+	{
+		err_bannedfromchan(client, channel);
+		return 1;
+	}
+	if(channel->get_is_invite_only() && !is_in_vector(client, channel->get_invited_vec()))
+	{
+		err_inviteonlychan(client,channel);
+		return 1;
+	}
+	return	0;
+}
 void Server::join_cmd(Client * client, std::string chan_name)
 {
 	Channel * channel;
@@ -45,12 +58,9 @@ void Server::join_cmd(Client * client, std::string chan_name)
 	try {
 		channel = this->find_channel_by_name(chan_name);
 		already_in_channel = channel->contains_client(client);
-		std::cout<<"is invite only = "<<channel->get_is_invite_only()<<"is_in_vector"<<is_in_vector(client, channel->get_invited_vec())<<std::endl;
-		if(channel->get_is_invite_only() && !is_in_vector(client, channel->get_invited_vec()))
-		{
-			err_inviteonlychan(client,chan_name);
+		std::cout<<"debug join_cmd is invite only = "<<channel->get_is_invite_only()<<"is_in_vector"<<is_in_vector(client, channel->get_invited_vec())<<std::endl;
+		if (validity_test(client, channel))
 			return;
-		}
 		add_if_no_in(client, channel->get_clients());
 		add_if_no_in(channel, client->get_channels());
 	}

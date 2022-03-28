@@ -140,6 +140,11 @@ void Server::receive_message(int sockfd, Message const & message) {
 			return this->err_needmoreparams(client, "KICK");
 		this->kick_cmd(client, message);
 	}
+	else if (message.get_command() == "TOPIC") {
+		if (message.get_param().size() ==0)
+			return this->err_needmoreparams(client, "KICK");
+		this->topic_cmd(client, message);
+	}
 }
 
 void Server::parse_one_comma_list(std::vector<std::string> & args, std::vector<std::string> * result_vector) {

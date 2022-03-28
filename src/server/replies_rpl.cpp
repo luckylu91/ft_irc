@@ -45,12 +45,12 @@ void Server::rpl_join(Client const * client, Channel const * chan) const {
 	m.add_param(chan->get_name());
 	chan->forward_message(m);
 }
-void Server::rpl_notopic(Client const * client, Channel const * chan) const {
-	Message m = this->base_message(client, RPL_NOTOPIC);
-	m.add_param(chan->get_name());
-	m.add_param("No topic is set");
-	this->send_message(client, m);
-}
+// void Server::rpl_notopic(Client const * client, Channel const * chan) const {
+	// Message m = this->base_message(client, RPL_NOTOPIC);
+	// m.add_param(chan->get_name());
+	// m.add_param("No topic is set");
+	// this->send_message(client, m);
+// }
 void Server::rpl_namreply(Client const * client, Channel const * chan) const {
 	Message m = this->base_message(client, RPL_NAMREPLY);
 	m.add_param("@");
@@ -140,3 +140,21 @@ void Server::rpl_quit(Client const * client, std::string const & quit_msg) {
 		m.add_param("Client Quit");
 	for_each_in_vector(SendMessageToClientDifferent(client, m), client->related_clients());
 }
+// TOPIC
+
+void Server::rpl_notopic(Client const * client, Channel const * channel)const {
+	Message m = this->base_message(client, RPL_NOTOPIC);
+	m.add_param(channel->get_name());
+	m.add_param("No topic is set");
+	this->send_message(client, m);
+
+}
+
+void Server::rpl_topic(Client const * client, Channel const * channel) const{
+	Message m = this->base_message(client, RPL_TOPIC);
+	m.add_param(channel->get_name());
+	m.add_param(channel->get_topic());
+	this->send_message(client, m);
+
+}
+

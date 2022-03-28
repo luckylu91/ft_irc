@@ -53,9 +53,9 @@ public:
 
 	//join
 	void rpl_join(Client const * client, Channel const * chan) const;
-	void rpl_notopic(Client const * client, Channel const * chan) const;
 	void rpl_namreply(Client const * client, Channel const * chan) const;
 	void rpl_endofnames(Client const * client, Channel const * chan) const;
+	int validity_test(Client * client, Channel * channel);
 	//pong
 	void rpl_pong(Client const * client) const;
 	//invite
@@ -69,6 +69,10 @@ public:
 	void rpl_msg(std::string const & command, Client const * src, Client const * dest, std::string const & content) const;
 	//quit
 	void rpl_quit(Client const * client, std::string const & quit_msg = std::string());
+	//topic
+	void topic_cmd(Client * client, Message const & message);
+	void rpl_notopic(Client const * client, Channel const * chan) const;
+	void rpl_topic(Client const * client, Channel const * channel) const;
 	//errors
 	void err_needmoreparams(Client const * client, std::string const & command) const;
 	void err_alreadyregistred(Client const * client) const;
@@ -84,13 +88,13 @@ public:
 	void err_nosuchchannel(Client const * client, std::string const & channel_name) const;
 	void err_unknownmode(Client const * client, std::string const & flag,std::string const & channel_name) const ;
 	void err_chanoprivsneeded(Client const * client,Channel const * channel) const ;
-	void err_inviteonlychan(Client const * client, std::string const & channel_name) const;
+	void err_inviteonlychan(Client const * client, Channel const * channel) const ;
 	void err_usernotinchannel(Client const * client, std::string const & nick, Channel const * channel) const;
 	void err_notonchannel(Client const * client, Channel const * channel) const;
 	void err_badchanmask(Client const * client, Channel const * channel) const;
 	void err_useronchannel(Client const * client, Channel const * channel, Client const * target) const;
 	void err_cannotsendtochan(Client const * client, std::string const & channel_name) const;
-
+	void err_bannedfromchan(Client const * client, Channel const * channel) const;
 private:
 	std::string name;
 	std::string version;
