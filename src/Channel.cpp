@@ -160,3 +160,18 @@ std::string Channel::size_str() const {
 	ss << this->size();
 	return ss.str();
 }
+
+std::string Channel::mode_to_string() const
+{
+	std::string mode_string;
+	mode_string.append("+");
+	if (is_invite_only)
+		mode_string.append("i");
+	if (is_private)
+		mode_string.append("p");
+	if (is_secret)
+		mode_string.append("s");
+	if (is_topic_protected)
+		mode_string.append("t");
+	return mode_string;
+}

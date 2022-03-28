@@ -44,6 +44,7 @@ public:
 	std::size_t size() const;
 	void set_topic(std::string new_topic);
 	std::string size_str() const;
+	std::string mode_to_string() const;
 
 private:
 	Server & server;

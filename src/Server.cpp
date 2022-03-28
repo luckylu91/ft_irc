@@ -130,7 +130,7 @@ void Server::receive_message(int sockfd, Message & message) {
 		this->rpl_pong(client);
 	}
 	else if (message.get_command() == "MODE") {
-		if (message.get_param().size() < 2)
+		if (message.get_param().size() < 1)
 			return this->err_needmoreparams(client, "MODE");
 		this->mode_cmd(client, message);
 	}

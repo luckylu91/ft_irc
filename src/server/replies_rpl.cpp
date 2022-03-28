@@ -152,3 +152,13 @@ void Server::rpl_listend(Client const * client) const {
 	m.add_param("End of LIST");
 	this->send_message(client, m);
 }
+// MODE
+//324 	RPL_CHANNELMODEIS 	RFC1459 	<channel> <mode> <mode_params>
+void Server::rpl_channelmodeis(Client const * client, Channel const * channel) const {
+	Message m = this->base_message(client, RPL_CHANNELMODEIS);
+	m.add_param(channel->get_name());
+	m.add_param(channel->mode_to_string());
+	this->send_message(client, m);
+}
+
+
