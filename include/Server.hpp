@@ -5,15 +5,17 @@
 #include <vector>
 
 #include "Client.hpp"
+#include "io_manager.hpp"
 
 class Client;
 class Message;
 class Channel;
 class Bot;
+class Io_manager;
 
 class Server {
  public:
-  Server(std::string const &name, std::string const &version, std::string const &password);
+  Server(std::string const &name, std::string const &version, std::string const &password,Io_manager * _io_manager);
   ~Server();
 
   // Utils
@@ -111,4 +113,5 @@ class Server {
   std::vector<Client *> clients;
   std::vector<Channel *> channels;
   std::string creation_time_string;
+  Io_manager * io_manager;
 };

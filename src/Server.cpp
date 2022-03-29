@@ -18,12 +18,13 @@
 typedef std::vector<Client *>::const_iterator client_iterator;
 typedef std::vector<Channel *>::const_iterator channel_iterator;
 
-Server::Server(std::string const &name, std::string const &version, std::string const &password) : name(name),
+Server::Server(std::string const &name, std::string const &version, std::string const &password, Io_manager * _io_manager) : name(name),
                                                                                                    version(version),
                                                                                                    password(password),
                                                                                                    clients(),
                                                                                                    channels(),
-                                                                                                   creation_time_string() {
+                                                                                                   creation_time_string(),
+																								   io_manager(_io_manager){
   srand(time(NULL));
   time_t timestamp = time(NULL);
   this->creation_time_string = ctime(&timestamp);
@@ -95,8 +96,9 @@ bool Server::try_password(std::string const &pass) const {
   return pass == this->password;
 }
 
-void Server::send_message(Client const *client, Message const &message) const {
-  client->receive_message(message);
+void Server::send_message(Client const *client, Message const & message) const {
+	io_manager->add_message_to_fd(client, message);
+	// client->receive_message(message);
 }
 
 void Server::receive_message(int sockfd, Message &message) {
