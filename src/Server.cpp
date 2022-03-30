@@ -96,8 +96,9 @@ bool Server::try_password(std::string const &pass) const {
   return pass == this->password;
 }
 
-void Server::send_message(Client const *client, Message const &message) const {
-  client->receive_message(message);
+void Server::send_message(Client const *client, Message const & message) const {
+	io_manager->add_message_to_fd(client, message);
+	// client->receive_message(message);
 }
 
 void Server::receive_message(int sockfd, Message &message) {

@@ -125,13 +125,12 @@ Message Client::base_privmsg() const {
   message.set_command("PRIVMSG");
   return message;
 }
-
 void Client::receive_message(Message const &message) const {
   std::string message_str = message.to_string();
   std::cout << "Sending message  '" << special_string(message_str) << "'" << std::endl;
   int n = write(this->sockfd, message_str.c_str(), message_str.size());
   if (n < 0)
-    throw ClientSocketWriteException(this);
+	throw ClientSocketWriteException(this);
 }
 
 std::vector<Client const *> Client::related_clients() const {
