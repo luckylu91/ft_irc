@@ -5,20 +5,21 @@
 #include <vector>
 
 #include "Client.hpp"
-#include "io_manager.hpp"
+#include "IOManager.hpp"
 
 class Client;
 class Message;
 class Channel;
 class Bot;
-class Io_manager;
+struct IOManagerInterface;
 
 class Server {
  public:
-  Server(std::string const &name, std::string const &version, std::string const &password,Io_manager * _io_manager);
+  Server(std::string const &name, std::string const &version, std::string const &password, IOManagerInterface * io_manager);
   ~Server();
 
-  // Utils
+  // utils
+  IOManagerInterface * get_io_manager() { return this->io_manager; }
   void new_bot(std::string const &name, std::string const &file_name);
   void new_client(int sockfd, struct sockaddr_in addr);
   void remove_client(Client *client);
@@ -32,7 +33,7 @@ class Server {
   bool nick_exists(std::string const &nick) const;
   void receive_message(int sockfd, Message &message);
 
-  // Commands
+  // commands
   void msg_cmd(std::string const &command, Client const *source, std::string const &msgtarget,
                std::string const &message);
   void join_cmd(Client *client, Message const &message);
@@ -113,5 +114,5 @@ class Server {
   std::vector<Client *> clients;
   std::vector<Channel *> channels;
   std::string creation_time_string;
-  Io_manager * io_manager;
+  IOManagerInterface * io_manager;
 };
