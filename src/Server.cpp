@@ -18,12 +18,13 @@
 typedef std::vector<Client *>::const_iterator client_iterator;
 typedef std::vector<Channel *>::const_iterator channel_iterator;
 
-Server::Server(std::string const &name, std::string const &version, std::string const &password) : name(name),
-                                                                                                   version(version),
-                                                                                                   password(password),
-                                                                                                   clients(),
-                                                                                                   channels(),
-                                                                                                   creation_time_string() {
+Server::Server(std::string const &name, std::string const &version, std::string const &password) :
+    name(name),
+    version(version),
+    password(password),
+    clients(),
+    channels(),
+    creation_time_string() {
   srand(time(NULL));
   time_t timestamp = time(NULL);
   this->creation_time_string = ctime(&timestamp);

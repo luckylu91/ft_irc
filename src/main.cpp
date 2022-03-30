@@ -17,7 +17,7 @@
 #include "utils.hpp"
 
 int sockfd = -1;
-//
+
 int setup_socket(int &option, struct sockaddr_in &serv_addr, struct sockaddr_in &cli_addr, int &clilen, char *argv[]) {
   int portno;
   sockfd = socket(AF_INET, SOCK_STREAM, 0);
