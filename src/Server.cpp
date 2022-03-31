@@ -160,7 +160,7 @@ void Server::receive_message(int sockfd, Message &message) {
   }
   else if (message.get_command() == "TOPIC") {
     if (message.get_param().size() == 0)
-      return this->err_needmoreparams(client, "KICK");
+      return this->err_needmoreparams(client, "TOPIC");
     this->topic_cmd(client, message);
   }
   else if (message.get_command() == "LIST") {

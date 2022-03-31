@@ -19,11 +19,12 @@ void Server::topic_cmd(Client *client, Message const &message) {
       else
         return rpl_topic(client, channel);
     }
-    if (channel->get_is_topic_protected() && !is_in_vector(client, channel->get_operators())) {
+    if (channel->get_is_topic_protected() && !channel->is_operator(client)) {
       err_chanoprivsneeded(client, channel);
       return;
     }
     channel->set_topic(temp_param[1]);
+    this->rpl_topic_set(client, channel);
   } catch (NoSuchChannelNameException &) {
     this->err_nosuchchannel(client, temp_param[0]);
   }

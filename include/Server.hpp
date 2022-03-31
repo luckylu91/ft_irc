@@ -69,7 +69,6 @@ class Server {
   void rpl_pong(Client const *client) const;
   // invite
   void rpl_inviting(Client const *client, Channel const *channel, Client const *target) const;
-  // errors
   // kick & part
   void rpl_part_and_remove(Client *client, Channel *channel, std::string const &part_message) const;
   void rpl_kick_and_remove(Client const *src, Client *dest, Channel *channel, std::string const &kick_message) const;
@@ -79,6 +78,7 @@ class Server {
   void topic_cmd(Client *client, Message const &message);
   void rpl_notopic(Client const *client, Channel const *chan) const;
   void rpl_topic(Client const *client, Channel const *channel) const;
+  void rpl_topic_set(Client const * client, Channel const * channel) const;
   // list
   void rpl_list(Client const *client, Channel const *channel) const;
   void rpl_listend(Client const *client) const;

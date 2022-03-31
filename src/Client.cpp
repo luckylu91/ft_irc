@@ -96,13 +96,14 @@ void Client::set_nick(std::string const &nick) {
   if (this->server.nick_exists(nick)) {
     return this->server.err_nicknameinuse(this, nick);
   }
-  server.rpl_nick(this, nick);
+  if (this->is_registered())
+    server.rpl_nick(this, nick);
   this->nick = nick;
   if (!this->is_nick && this->is_user) {
     this->server.welcome(this);
   }
   this->is_nick = true;
-	
+
 }
 
 bool Client::is_registered() const {

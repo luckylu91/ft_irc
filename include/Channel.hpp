@@ -23,6 +23,8 @@ class Channel {
   void remove_client(Client *client);
   std::string get_name() const { return this->name; }
   bool get_is_invite_only() const { return this->is_invite_only; }
+  bool get_is_secret() const { return this->is_secret; }
+  bool get_is_private() const { return this->is_private; }
   bool get_is_topic_protected() const { return this->is_topic_protected; }
   std::string get_topic() const { return this->topic; };
   std::vector<Client const *> const &get_invited_vec() const { return this->invited; };

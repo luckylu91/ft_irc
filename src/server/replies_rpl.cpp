@@ -130,6 +130,8 @@ void Server::rpl_topic(Client const* client, Channel const* channel) const {
 // LIST
 
 void Server::rpl_list(Client const* client, Channel const* channel) const {
+  if (channel->get_is_private() || channel->get_is_secret())
+    return;
   Message m = this->base_message(client, RPL_LIST);
   m.add_param(channel->get_name());
   m.add_param(channel->size_str());
@@ -161,3 +163,13 @@ void Server::rpl_nick(Client const *client, std::string const nick)
   client->receive_message(m);
   for_each_in_vector(SendMessageToClientDifferent(client, m), client->related_clients());
 }
+
+void Server::rpl_topic_set(Client const * client, Channel const * channel) const {
+  Message m;
+  m.set_source(client->name());
+  m.set_command("TOPIC");
+  m.add_param(channel->get_name());
+  m.add_param(channel->get_topic());
+  this->send_message(client, m);
+}
+

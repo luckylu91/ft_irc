@@ -53,7 +53,7 @@ void disconnection(struct kevent tevent, Server *server) {
   printf("Client has disconnected, sockfd = %d\n", temp_client_sockfd);
   close(tevent.ident);
   server->remove_client_sockfd(static_cast<int>(tevent.ident));
-  Message::remove_connection_cache(g_sockfd);
+  Message::remove_connection_cache(temp_client_sockfd);
 }
 
 void show_main_usage() {

@@ -1,0 +1,7 @@
+mode:
+envoyer liste des modes du channel au join
+mode, channel and no other param -> envoyer liste des modes du channel
+mode +b sans nick -> liste des ban (ici pas de check)
+mode +o sans nick -> ERR_NEEDMOREPARAMS (ici pas de check)
+
+
