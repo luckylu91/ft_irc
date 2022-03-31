@@ -1,7 +1,9 @@
 #include "main_utils.hpp"
 
+#include <netinet/in.h>
 #include <signal.h>
-#include <sys/socket.h>
+#include <sys/event.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <iostream>
@@ -9,13 +11,14 @@
 #include <vector>
 
 #include "Message.hpp"
+#include "Server.hpp"
 
-extern int sockfd;
+extern int g_sockfd;
 
 void sig_handler(int sig_code) {
   if (sig_code == SIGINT) {
-    if (sockfd > 0) {
-      close(sockfd);
+    if (g_sockfd > 0) {
+      close(g_sockfd);
     }
     exit(0);
   }
@@ -23,5 +26,48 @@ void sig_handler(int sig_code) {
 
 void error(const char *msg) {
   perror(msg);
-  exit(0);
+  exit(1);
 }
+
+int setup_socket(int &option, struct sockaddr_in &serv_addr, struct sockaddr_in &cli_addr, int &clilen, int portno) {
+  int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option));
+
+  if (sockfd < 0) {
+    error("error opening socket");
+  }
+  bzero((char *)&serv_addr, sizeof(serv_addr));
+  serv_addr.sin_family = AF_INET;
+  serv_addr.sin_addr.s_addr = INADDR_ANY;
+  serv_addr.sin_port = htons(portno);
+  if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
+    error("error on binding");
+  }
+  listen(sockfd, 5);
+  clilen = sizeof(cli_addr);
+  return sockfd;
+}
+
+void disconnection(struct kevent tevent, Server *server) {
+  int temp_client_sockfd = static_cast<int>(tevent.ident);
+  printf("Client has disconnected, sockfd = %d\n", temp_client_sockfd);
+  close(tevent.ident);
+  server->remove_client_sockfd(static_cast<int>(tevent.ident));
+  Message::remove_connection_cache(g_sockfd);
+}
+
+// void show_main_usage() {
+//   std::cout << "Usage:" << std::endl;
+//   std::cout << "    ./ircserv <port> <server_password>" << std::endl;
+//   exit(1);
+// }
+
+// void check_main_arguments(int argc, char **argv) {
+//   if (argc != 2) {
+//     std::cout << "Incorrect number of arguments" << std::endl;
+//     show_main_usage();
+//   }
+//   for (std::size_t i = 0; argv[1][i]; i++) {
+//     if (!std::isdi argv[1][i])
+//   }
+// }

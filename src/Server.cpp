@@ -10,6 +10,7 @@
 #include "Bot.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
+#include "IOManagerInterface.hpp"
 #include "Message.hpp"
 #include "errors.hpp"
 #include "numeric_codes.hpp"
@@ -18,13 +19,14 @@
 typedef std::vector<Client *>::const_iterator client_iterator;
 typedef std::vector<Channel *>::const_iterator channel_iterator;
 
-Server::Server(std::string const &name, std::string const &version, std::string const &password, Io_manager * _io_manager) : name(name),
-                                                                                                   version(version),
-                                                                                                   password(password),
-                                                                                                   clients(),
-                                                                                                   channels(),
-                                                                                                   creation_time_string(),
-																								   io_manager(_io_manager){
+Server::Server(std::string const &name, std::string const &version, std::string const &password, IOManagerInterface * io_manager):
+    name(name),
+    version(version),
+    password(password),
+    clients(),
+    channels(),
+    creation_time_string(),
+    io_manager(io_manager) {
   srand(time(NULL));
   time_t timestamp = time(NULL);
   this->creation_time_string = ctime(&timestamp);
@@ -37,6 +39,7 @@ static void delete_one_client(Client *item) {
 static void delete_one_channel(Channel *item) {
   delete item;
 }
+
 Server::~Server() {
   std::for_each(this->clients.begin(), this->clients.end(), delete_one_client);
   std::for_each(this->channels.begin(), this->channels.end(), delete_one_channel);
@@ -97,8 +100,7 @@ bool Server::try_password(std::string const &pass) const {
 }
 
 void Server::send_message(Client const *client, Message const & message) const {
-	io_manager->add_message_to_fd(client, message);
-	// client->receive_message(message);
+  client->receive_message(message);
 }
 
 void Server::receive_message(int sockfd, Message &message) {

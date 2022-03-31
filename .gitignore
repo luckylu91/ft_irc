@@ -5,3 +5,4 @@ ft_irc
 obj/
 .vscode/
 *.py
+ircserv

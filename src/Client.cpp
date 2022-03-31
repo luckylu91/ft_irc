@@ -86,20 +86,32 @@ void Client::set_user(std::string const &user_name, std::string const &real_name
 // (before)
 // ERR_NONICKNAMEGIVEN (431)
 void Client::set_nick(std::string const &nick) {
+
+	std::cout<<"debug set_nick 1 "<<std::endl;
   if (!this->is_identified && this->is_user) {
     return this->server.err_passwdmismatch(this);
   }
+
+	std::cout<<"debug set_nick 2 "<<std::endl;
   if (invalid_nick(nick)) {
     return this->server.err_erroneusnickname(this, nick);
   }
+
+	std::cout<<"debug set_nick 3 "<<std::endl;
   if (this->server.nick_exists(nick)) {
     return this->server.err_nicknameinuse(this, nick);
   }
+
+	std::cout<<"debug set_nick 4"<<std::endl;
+  server.rpl_nick(this, nick);
+
+	std::cout<<"debug set_nick 5 "<<std::endl;
   this->nick = nick;
   if (!this->is_nick && this->is_user) {
     this->server.welcome(this);
   }
   this->is_nick = true;
+	
 }
 
 bool Client::is_registered() const {
@@ -125,12 +137,9 @@ Message Client::base_privmsg() const {
   message.set_command("PRIVMSG");
   return message;
 }
+
 void Client::receive_message(Message const &message) const {
-  std::string message_str = message.to_string();
-  std::cout << "Sending message  '" << special_string(message_str) << "'" << std::endl;
-  int n = write(this->sockfd, message_str.c_str(), message_str.size());
-  if (n < 0)
-	throw ClientSocketWriteException(this);
+  (this->server.get_io_manager())->send_message(this->sockfd, message);
 }
 
 std::vector<Client const *> Client::related_clients() const {

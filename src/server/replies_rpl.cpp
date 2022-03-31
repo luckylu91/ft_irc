@@ -149,3 +149,14 @@ void Server::rpl_channelmodeis(Client const* client, Channel const* channel) con
   m.add_param(channel->mode_to_string());
   this->send_message(client, m);
 }
+//NICK
+
+void Server::rpl_nick(Client const *client, std::string const nick)
+{
+  Message m;
+  m.set_source(client->name());
+  m.set_command("NICK");
+  m.add_param(nick);
+  client->receive_message(m);
+  for_each_in_vector(SendMessageToClientDifferent(client, m), client->related_clients());
+}
