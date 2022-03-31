@@ -87,6 +87,7 @@ void Server::err_inviteonlychan(Client const* client, Channel const* channel) co
   Message m = this->base_message(client, ERR_INVITEONLYCHAN);
   m.add_param(channel->get_name());
   m.add_param("Cannot join channel (+i)");
+  this->send_message(client, m);
 }
 void Server::err_unknownmode(Client const* client, std::string const& flag, std::string const& channel_name) const {
   Message m = this->base_message(client, ERR_UNKNOWNMODE);

@@ -86,6 +86,7 @@ void Client::set_user(std::string const &user_name, std::string const &real_name
 // (before)
 // ERR_NONICKNAMEGIVEN (431)
 void Client::set_nick(std::string const &nick) {
+
   if (!this->is_identified && this->is_user) {
     return this->server.err_passwdmismatch(this);
   }
@@ -95,11 +96,13 @@ void Client::set_nick(std::string const &nick) {
   if (this->server.nick_exists(nick)) {
     return this->server.err_nicknameinuse(this, nick);
   }
+  server.rpl_nick(this, nick);
   this->nick = nick;
   if (!this->is_nick && this->is_user) {
     this->server.welcome(this);
   }
   this->is_nick = true;
+	
 }
 
 bool Client::is_registered() const {
@@ -131,7 +134,7 @@ Message Client::base_privmsg() const {
 }
 
 void Client::receive_message(Message const &message) const {
-  this->server.get_io_manager()->send_message(this->sockfd, message);
+  (this->server.get_io_manager())->send_message(this->sockfd, message);
 }
 
 std::vector<Client const *> Client::related_clients() const {

@@ -50,10 +50,10 @@ int main(int argc, char *argv[]) {
 			else if (tevent.filter == EVFILT_WRITE) {
 				io_manager.write_event(tevent);
 			}
-			// else
-			// {
-			// 	std::cout<<"ca boucle ?\n";
-			// }
+			else
+			{
+				std::cout<<"Uncaught tevent\n";
+			}	
 		}
 	}
 	return 0;

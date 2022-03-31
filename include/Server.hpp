@@ -84,6 +84,8 @@ class Server {
   void rpl_listend(Client const *client) const;
   // mode
   void rpl_channelmodeis(Client const *client, Channel const *channel) const;
+  // nick
+  void rpl_nick(Client const *client, std::string const nick);
   // errors
   void err_needmoreparams(Client const *client, std::string const &command) const;
   void err_alreadyregistred(Client const *client) const;

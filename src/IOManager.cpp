@@ -52,7 +52,9 @@ void IOManager::send_message(int client_sockfd, Message const &message) {
     EV_SET(&triggers, client_sockfd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, 0);
     kevent(kq, &triggers, 1, NULL, 0, NULL);
   } else
+  {
     (it->second).append(message.to_string());
+  }
 }
 
 void IOManager::write_event(struct kevent tevent) {
@@ -76,7 +78,6 @@ void IOManager::write_event(struct kevent tevent) {
     (it->second).erase(0, (size_t)tevent.data);
   } else {
     n = write(tevent.ident, (it->second).c_str(), (it->second).size());
-
     if (n < 0) {
       std::cout << "Erreur write fd = " << tevent.ident << std::endl;
       return;
