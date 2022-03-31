@@ -1,7 +1,7 @@
 connect 0
-recv 0 NICK lzins\r\n
-recv 1 NICK
-recv 0
-  - PASS root\r\n
-  - USER lzins * * lzins\r\n
+0 NICK lzins\r\n
+connect 1
+1 NICK
+0 PASS root\r\n
+0 USER lzins * * lzins\r\n
 
