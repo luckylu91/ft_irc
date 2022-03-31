@@ -6,11 +6,13 @@ CFLAGS = -Iinclude -Wall -Wextra -Werror -std=c++98 #3 -fsanitize=address
 
 all: $(NAME)
 
-$(NAME): $(OBJS) | $(HEADERS)
-	g++ -o $@ $^ $(CFLAGS)
+$(NAME): $(HEADERS)
+$(NAME): $(OBJS)
+	g++ -o $@ $(OBJS) $(CFLAGS)
 
+$(OBJS): $(HEADERS)
 obj/%.o: src/%.cpp | obj obj/server
-	g++ -c -o $@ $^ $(CFLAGS)
+	g++ -c -o $@ $< $(CFLAGS)
 
 obj obj/server:
 	mkdir -p obj/server
