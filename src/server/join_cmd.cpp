@@ -21,12 +21,12 @@ void Server::join_cmd_one(Client *client, std::string chan_name) {
     already_in_channel = channel->contains_client(client);
     if (validity_test(client, channel))
       return;
-    add_if_no_in(client, channel->get_clients());
-    add_if_no_in(channel, client->get_channels());
   } catch (NoSuchChannelNameException &) {
     channel = new Channel(*this, chan_name, client);
     channels.push_back(channel);
   }
+  add_if_no_in(client, channel->get_clients());
+  add_if_no_in(channel, client->get_channels());
   if (!already_in_channel) {
     this->rpl_join(client, channel);
     this->rpl_notopic(client, channel);
@@ -34,6 +34,7 @@ void Server::join_cmd_one(Client *client, std::string chan_name) {
     this->rpl_endofnames(client, channel);
   }
 }
+
 int Server::validity_test(Client *client, Channel *channel) {
   if (is_in_vector(client, channel->get_banned_vec())) {
     err_bannedfromchan(client, channel);

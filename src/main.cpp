@@ -17,17 +17,21 @@
 
 int g_sockfd = -1;
 
-int main(int, char *argv[]) {
+int main(int argc, char *argv[]) {
 	signal(SIGINT, &sig_handler);
 	struct kevent tevents[20];
 	struct kevent tevent;
 	std::vector<Message> parsed_message;
-	int clilen, ret, option = 1;
+	int clilen, ret, option = 1, portno;
+  std::string server_password;
 	struct sockaddr_in serv_addr, cli_addr;
 
-	g_sockfd = setup_socket(option, serv_addr, cli_addr, clilen, atoi(argv[1]));
+  check_main_arguments(argc, argv);
+  portno = atoi(argv[1]);
+  server_password = argv[2];
+	g_sockfd = setup_socket(option, serv_addr, cli_addr, clilen, portno);
 	IOManager io_manager(g_sockfd);
-	Server server("LE_SERVER", "0.1", "root", static_cast<IOManagerInterface*>(&io_manager));
+	Server server("LE_SERVER", "0.1", server_password, static_cast<IOManagerInterface*>(&io_manager));
 	server.new_bot("bbot", "liste_mots.txt");
 	while (1) {
 		parsed_message.clear();

@@ -101,6 +101,7 @@ bool Server::try_password(std::string const &pass) const {
 
 void Server::send_message(Client const *client, Message const & message) const {
   client->receive_message(message);
+  std::cout << "Sended message '" << special_string(message.to_string()) << "'" << std::endl;
 }
 
 void Server::receive_message(int sockfd, Message &message) {
@@ -165,6 +166,9 @@ void Server::receive_message(int sockfd, Message &message) {
   else if (message.get_command() == "LIST") {
     this->list_cmd(client, message);
   }
+  // else if (message.get_command() == "QUIT") {
+  //   this->rpl_quit(client, message);
+  // }
 }
 
 Channel *Server::try_action_on_channel_name(Client const *client, std::string const &channel_name) {
