@@ -41,6 +41,7 @@ class Channel {
   void set_topic(std::string new_topic);
   std::string size_str() const;
   std::string mode_to_string() const;
+  void add_client(Client const * client);
 
  private:
   Server &server;

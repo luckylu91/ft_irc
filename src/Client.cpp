@@ -115,6 +115,10 @@ std::string Client::name() const {
   return ss.str();
 }
 
+void Client::add_channel(Channel * channel) {
+  add_if_no_in(channel, this->channels);
+}
+
 void Client::remove_channel(Channel const *channel) {
   remove_from_vector(channel, this->channels);
 }
@@ -132,12 +136,9 @@ void Client::receive_message(Message const &message) const {
 
 std::vector<Client const *> Client::related_clients() const {
   std::vector<Client const *> related_clients;
-  std::cout << "client->channels.size() = " << this->channels.size() << std::endl;
   for (std::size_t i = 0; i < this->channels.size(); i++) {
     std::vector<Client const *> channel_clients = this->channels[i]->get_clients();
-    std::cout << "size of " << this->channels[i]->get_name() << ": " << channel_clients.size() << std::endl;
     for (std::size_t j = 0; j < channel_clients.size(); j++) {
-      std::cout << "adding " << channel_clients[j]->name() << std::endl;
       add_if_no_in(channel_clients[j], related_clients);
     }
   }

@@ -30,6 +30,7 @@ class Client {
   int get_sockfd() const { return this->sockfd; }
   std::string get_nick() const { return this->nick; }
   std::vector<Channel *> &get_channels() { return this->channels; }
+  void add_channel(Channel * channel);
   void remove_channel(Channel const *channel);
   Message base_privmsg() const;
   // void send_message(Client const * dest, std::string const & content) const;

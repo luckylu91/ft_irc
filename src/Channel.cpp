@@ -162,3 +162,9 @@ std::string Channel::mode_to_string() const {
     mode_string.append("t");
   return mode_string;
 }
+
+void Channel::add_client(Client const * client) {
+  if (!this->contains_client(client)) {
+    add_if_no_in(client, this->clients);
+  }
+}
