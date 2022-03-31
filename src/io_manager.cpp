@@ -26,6 +26,7 @@ void	Io_manager::new_connection(Server * server)
 	int temp_cli_sockfd =  accept(server_fd, (struct sockaddr *)&cli_addr, (socklen_t *)&clilen);
 	printf("New connection, sockfd = %d\n", temp_cli_sockfd);
 	server->new_client(temp_cli_sockfd, cli_addr);
+	fcntl(temp_cli_sockfd, F_SETFL, O_NONBLOCK);
 	EV_SET(&triggers, temp_cli_sockfd, EVFILT_READ, EV_ADD, 0, 0, 0);
 	kevent(kq, &triggers, 1, NULL, 0, NULL);
 }
@@ -37,7 +38,6 @@ void	Io_manager::incoming_message(Server * server, struct kevent tevent)
 	std::vector<Message> parsed_message;
 	int n;
 	int temp_cli_sockfd  = static_cast<int>(tevent.ident);
-
 	bzero(buffer, 256);
 	n = recv(tevent.ident, buffer, 255, 0);
 	if (n < 0)

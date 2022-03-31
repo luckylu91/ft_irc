@@ -43,31 +43,27 @@ int setup_socket(int &option, struct sockaddr_in &serv_addr, struct sockaddr_in 
 
 void	disconnection(struct kevent tevent, Server * server)
 {
-			int temp_client_sockfd = static_cast<int>(tevent.ident);
-				printf("Client has disconnected, sockfd = %d\n",temp_client_sockfd);
-				close(tevent.ident);
-				server->remove_client_sockfd(static_cast<int>(tevent.ident));
-				Message::remove_connection_cache(sockfd);
+	int temp_client_sockfd = static_cast<int>(tevent.ident);
+	printf("Client has disconnected, sockfd = %d\n",temp_client_sockfd);
+	close(tevent.ident);
+	server->remove_client_sockfd(static_cast<int>(tevent.ident));
+	Message::remove_connection_cache(sockfd);
 }
 
 int main(int, char *argv[]) {
 	signal(SIGINT, &sig_handler);
-	// struct kevent event; [> Event we want to monitor <]
 	struct kevent tevents[20];
 	struct kevent tevent;
 	std::vector<Message> parsed_message;
 	int clilen, ret, option = 1;
-	// char buffer[256];
 	struct sockaddr_in serv_addr, cli_addr;
+
 	if (setup_socket(option, serv_addr, cli_addr, clilen, argv))
 		return 1;
-
 	Io_manager io_manager(sockfd, clilen);
 	Server server("LE_SERVER", "0.1", "root",&io_manager);
 	server.new_bot("bbot", "liste_mots.txt");
-	// EV_SET(&event, sockfd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 0);
-	// ret = kevent(kq, &event, 1, NULL, 0, NULL);
-	;
+	
 	while (1) {
 		parsed_message.clear();
 		ret = kevent(io_manager.get_kq(), 0, 0, tevents, 20, NULL);
@@ -75,11 +71,6 @@ int main(int, char *argv[]) {
 			tevent = tevents[i];
 			if (tevent.flags & EV_EOF) {
 				disconnection(tevent, &server);
-				// client_sockfd = static_cast<int>(tevent.ident);
-				// printf("Client has disconnected, sockfd = %d\n", client_sockfd);
-				// close(tevent.ident);
-				// server.remove_client_sockfd(static_cast<int>(tevent.ident));
-				// Message::remove_connection_cache(sockfd);
 			}
 			else if (static_cast<int>(tevent.ident) == sockfd) {
 				io_manager.new_connection(&server);
@@ -93,7 +84,7 @@ int main(int, char *argv[]) {
 			}
 			else
 			{
-				std::cout<<"ca boucle ?\n";
+				std::cout<<"Uncaught tevent\n";
 			}
 		}
 	}
