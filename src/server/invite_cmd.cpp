@@ -14,4 +14,7 @@ void Server::invite_cmd(Client *client, Message const &message) {
   } catch (NoSuchClientNickException &) {
     this->err_nosuchnick(client, temp_param[2]);
   }
+	catch (NoSuchChannelNameException &) {
+    this->err_nosuchchannel(client, temp_param[1]);
+  }
 }

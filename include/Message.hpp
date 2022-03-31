@@ -26,7 +26,6 @@ public:
 	static Message parse_one(std::string s);
 	static void remove_connection_cache(int sockfd);
 
-
 private:
 	bool source_is_set;
 	std::string source;

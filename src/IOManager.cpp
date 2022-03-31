@@ -48,14 +48,12 @@ void IOManager::read_event(Server *server, struct kevent tevent) {
 void IOManager::send_message(int client_sockfd, Message const &message) {
   std::map<int, std::string>::iterator it = task_tree.find(client_sockfd);
   if (it == task_tree.end()) {
-    std::cout<<"test dans send message io manager\n";
     task_tree.insert(std::make_pair(client_sockfd, message.to_string()));
     EV_SET(&triggers, client_sockfd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, 0);
     kevent(kq, &triggers, 1, NULL, 0, NULL);
   } else
   {
     (it->second).append(message.to_string());
-   std::cout<<"test dans send message io manage2222r\n";
   }
 }
 
@@ -73,7 +71,6 @@ void IOManager::write_event(struct kevent tevent) {
   }
   if ((size_t)tevent.data < string_to_send.size()) {
     n = write(tevent.ident, ((it->second).substr(0, (size_t)tevent.data)).c_str(), tevent.data);
-	std::cout<<"sending message = "<<((it->second).substr(0,(size_t)tevent.data)).c_str()<<"\n";
     if (n < 0) {
       std::cout << "Erreur write fd = " << tevent.ident << std::endl;
       return;
@@ -81,7 +78,6 @@ void IOManager::write_event(struct kevent tevent) {
     (it->second).erase(0, (size_t)tevent.data);
   } else {
     n = write(tevent.ident, (it->second).c_str(), (it->second).size());
-		std::cout<<"sending message = "<<it->second<<"\n";
     if (n < 0) {
       std::cout << "Erreur write fd = " << tevent.ident << std::endl;
       return;

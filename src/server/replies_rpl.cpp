@@ -101,6 +101,7 @@ void Server::rpl_kick_and_remove(Client const* src, Client* dest, Channel* chann
 // QUIT
 
 void Server::rpl_quit(Client const* client, std::string const& quit_msg) {
+  std::cout << std::endl;
   Message m;
   m.set_source(client->name());
   m.set_command("QUIT");

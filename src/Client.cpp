@@ -87,25 +87,16 @@ void Client::set_user(std::string const &user_name, std::string const &real_name
 // ERR_NONICKNAMEGIVEN (431)
 void Client::set_nick(std::string const &nick) {
 
-	std::cout<<"debug set_nick 1 "<<std::endl;
   if (!this->is_identified && this->is_user) {
     return this->server.err_passwdmismatch(this);
   }
-
-	std::cout<<"debug set_nick 2 "<<std::endl;
   if (invalid_nick(nick)) {
     return this->server.err_erroneusnickname(this, nick);
   }
-
-	std::cout<<"debug set_nick 3 "<<std::endl;
   if (this->server.nick_exists(nick)) {
     return this->server.err_nicknameinuse(this, nick);
   }
-
-	std::cout<<"debug set_nick 4"<<std::endl;
   server.rpl_nick(this, nick);
-
-	std::cout<<"debug set_nick 5 "<<std::endl;
   this->nick = nick;
   if (!this->is_nick && this->is_user) {
     this->server.welcome(this);
@@ -144,9 +135,12 @@ void Client::receive_message(Message const &message) const {
 
 std::vector<Client const *> Client::related_clients() const {
   std::vector<Client const *> related_clients;
+  std::cout << "client->channels.size() = " << this->channels.size() << std::endl;
   for (std::size_t i = 0; i < this->channels.size(); i++) {
     std::vector<Client const *> channel_clients = this->channels[i]->get_clients();
+    std::cout << "size of " << this->channels[i]->get_name() << ": " << channel_clients.size() << std::endl;
     for (std::size_t j = 0; j < channel_clients.size(); j++) {
+      std::cout << "adding " << channel_clients[j]->name() << std::endl;
       add_if_no_in(channel_clients[j], related_clients);
     }
   }

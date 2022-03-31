@@ -56,18 +56,25 @@ void disconnection(struct kevent tevent, Server *server) {
   Message::remove_connection_cache(g_sockfd);
 }
 
-// void show_main_usage() {
-//   std::cout << "Usage:" << std::endl;
-//   std::cout << "    ./ircserv <port> <server_password>" << std::endl;
-//   exit(1);
-// }
+void show_main_usage() {
+  std::cout << "Usage:" << std::endl;
+  std::cout << "    ./ircserv <port> <server_password>" << std::endl;
+  exit(1);
+}
 
-// void check_main_arguments(int argc, char **argv) {
-//   if (argc != 2) {
-//     std::cout << "Incorrect number of arguments" << std::endl;
-//     show_main_usage();
-//   }
-//   for (std::size_t i = 0; argv[1][i]; i++) {
-//     if (!std::isdi argv[1][i])
-//   }
-// }
+void check_main_arguments(int argc, char **argv) {
+  if (argc != 3) {
+    std::cout << "Incorrect number of arguments" << std::endl;
+    show_main_usage();
+  }
+  for (std::size_t i = 0; argv[1][i]; i++) {
+    if (!std::isdigit(argv[1][i])) {
+      std::cout << "Argument <port> is not a number" << std::endl;
+      show_main_usage();
+    }
+  }
+  if (strlen(argv[2]) == 0) {
+    std::cout << "Argument <server_password> is not long enough" << std::endl;
+    show_main_usage();
+  }
+}
