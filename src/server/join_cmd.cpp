@@ -31,6 +31,7 @@ void Server::join_cmd_one(Client *client, std::string chan_name) {
   this->rpl_notopic(client, channel);
   this->rpl_namreply(client, channel);
   this->rpl_endofnames(client, channel);
+  this->rpl_channelmodeis(client, channel);
 }
 
 int Server::validity_test(Client *client, Channel *channel) {

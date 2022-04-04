@@ -173,3 +173,20 @@ void Server::rpl_topic_set(Client const * client, Channel const * channel) const
   this->send_message(client, m);
 }
 
+void Server::rpl_banlist(Client const *client, Channel const * channel, std::string const nick)
+{
+
+  Message m = this->base_message(client, RPL_BANLIST);
+  m.add_param(channel->get_name());
+  m.add_param(nick);
+  this->send_message(client, m);
+}
+
+void Server::rpl_endofbanlist(Client const *client, Channel const * channel)
+{
+
+  Message m = this->base_message(client, RPL_ENDOFBANLIST);
+  m.add_param(channel->get_name());
+  m.add_param(":End of channel ban list");
+  this->send_message(client, m);
+}
