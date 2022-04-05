@@ -51,10 +51,6 @@ struct EmptyVectorException : std::exception {
   virtual char const* what() const throw() { return "Empty vector"; }
 };
 
-struct SameSenderAndRecipientException : std::exception {
-  virtual char const* what() const throw() { return "Trying to send a message from and to the same person"; }
-};
-
 struct FileReadError : std::exception {
   std::string msg;
   FileReadError(std::string const& file_name) : msg("Error reading file " + file_name) {}

@@ -46,15 +46,16 @@ bool Client::invalid_nick(std::string const &nick) {
   return false;
 }
 
-Client::Client(int sockfd, struct sockaddr_in addr, Server &server) : sockfd(sockfd),
-                                                                      addr(addr),
-                                                                      server(server),
-                                                                      nick("*"),
-                                                                      user_name("*"),
-                                                                      real_name("*"),
-                                                                      is_identified(false),
-                                                                      is_user(false),
-                                                                      is_nick(false) {}
+Client::Client(int sockfd, struct sockaddr_in addr, Server &server) :
+  sockfd(sockfd),
+  addr(addr),
+  server(server),
+  nick("*"),
+  user_name("*"),
+  real_name("*"),
+  is_identified(false),
+  is_user(false),
+  is_nick(false) {}
 
 void Client::set_password(std::string const &password) {
   if (this->is_registered()) {
@@ -86,7 +87,6 @@ void Client::set_user(std::string const &user_name, std::string const &real_name
 // (before)
 // ERR_NONICKNAMEGIVEN (431)
 void Client::set_nick(std::string const &nick) {
-
   if (!this->is_identified && this->is_user) {
     return this->server.err_passwdmismatch(this);
   }
@@ -103,7 +103,6 @@ void Client::set_nick(std::string const &nick) {
     this->server.welcome(this);
   }
   this->is_nick = true;
-
 }
 
 bool Client::is_registered() const {
@@ -119,7 +118,7 @@ std::string Client::name() const {
   return ss.str();
 }
 
-void Client::add_channel(Channel * channel) {
+void Client::add_channel(Channel *channel) {
   add_if_no_in(channel, this->channels);
 }
 

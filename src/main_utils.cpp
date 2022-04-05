@@ -58,12 +58,12 @@ void disconnection(struct kevent tevent, Server *server) {
 
 void show_main_usage() {
   std::cout << "Usage:" << std::endl;
-  std::cout << "    ./ircserv <port> <server_password>" << std::endl;
+  std::cout << "    ./ircserv <port> <server_password> [ path/to/words_list.txt ]" << std::endl;
   exit(1);
 }
 
 void check_main_arguments(int argc, char **argv) {
-  if (argc != 3) {
+  if (argc != 3 && argc != 4) {
     std::cout << "Incorrect number of arguments" << std::endl;
     show_main_usage();
   }

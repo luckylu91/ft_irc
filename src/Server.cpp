@@ -19,18 +19,18 @@
 typedef std::vector<Client *>::const_iterator client_iterator;
 typedef std::vector<Channel *>::const_iterator channel_iterator;
 
-Server::Server(std::string const &name, std::string const &version, std::string const &password, IOManagerInterface * io_manager):
-    name(name),
-    version(version),
-    password(password),
-    clients(),
-    channels(),
-    creation_time_string(),
-    io_manager(io_manager) {
-  srand(time(NULL));
-  time_t timestamp = time(NULL);
-  this->creation_time_string = ctime(&timestamp);
-  this->creation_time_string.erase(this->creation_time_string.find_last_not_of("\n") + 1);
+Server::Server(std::string const &name, std::string const &version, std::string const &password, IOManagerInterface *io_manager) :
+  name(name),
+  version(version),
+  password(password),
+  clients(),
+  channels(),
+  creation_time_string(),
+  io_manager(io_manager) {
+    srand(time(NULL));
+    time_t timestamp = time(NULL);
+    this->creation_time_string = ctime(&timestamp);
+    this->creation_time_string.erase(this->creation_time_string.find_last_not_of("\n") + 1);
 }
 
 static void delete_one_client(Client *item) {
@@ -45,10 +45,18 @@ Server::~Server() {
   std::for_each(this->channels.begin(), this->channels.end(), delete_one_channel);
 }
 
-void Server::new_bot(std::string const &name, std::string const &file_name) {
+bool Server::new_bot(std::string const &name, std::string const &file_name) {
   Bot *bot = new Bot(*this, name);
-  bot->parse_word_file(file_name);
-  this->clients.push_back(static_cast<Client *>(bot));
+  try {
+    bot->parse_word_file(file_name);
+    this->clients.push_back(static_cast<Client *>(bot));
+    return true;
+  }
+  catch (FileReadError & e) {
+    std::cerr << "Error with bot words_list file: " << strerror(errno) << std::endl;
+    delete bot;
+    return false;
+  }
 }
 
 void Server::new_client(int sockfd, struct sockaddr_in addr) {
@@ -99,7 +107,7 @@ bool Server::try_password(std::string const &pass) const {
   return pass == this->password;
 }
 
-void Server::send_message(Client const *client, Message const & message) const {
+void Server::send_message(Client const *client, Message const &message) const {
   client->receive_message(message);
   std::cout << "Sended message '" << special_string(message.to_string()) << "'" << std::endl;
 }
@@ -111,64 +119,50 @@ void Server::receive_message(int sockfd, Message &message) {
     if (message.get_param().size() == 0)
       return this->err_nonicknamegiven(client);
     client->set_nick(message.get_param()[0]);
-  }
-  else if (message.get_command() == "USER") {
+  } else if (message.get_command() == "USER") {
     if (message.get_param().size() < 4)
       return this->err_needmoreparams(client, "USER");
     client->set_user(message.get_param()[0], message.get_param()[3]);
-  }
-  else if (message.get_command() == "PASS") {
+  } else if (message.get_command() == "PASS") {
     if (message.get_param().size() == 0)
       return this->err_needmoreparams(client, "PASS");
     client->set_password(message.get_param()[0]);
-  }
-  else if (message.get_command() == "JOIN") {
+  } else if (message.get_command() == "JOIN") {
     if (message.get_param().size() == 0)
       return this->err_needmoreparams(client, "JOIN");
     this->join_cmd(client, message);
-  }
-  else if (message.get_command() == "PRIVMSG" || message.get_command() == "NOTICE") {
+  } else if (message.get_command() == "PRIVMSG" || message.get_command() == "NOTICE") {
     if (message.get_param().size() == 0)
       return this->err_norecipient(client, message.get_command());
     if (message.get_param().size() == 1)
       return this->err_notexttosend(client);
     this->msg_cmd(message.get_command(), client, message.get_param()[0], message.get_param()[1]);
-  }
-  else if (message.get_command() == "PING") {
+  } else if (message.get_command() == "PING") {
     // ...
     this->rpl_pong(client);
-  }
-  else if (message.get_command() == "MODE") {
+  } else if (message.get_command() == "MODE") {
     if (message.get_param().size() < 1)
       return this->err_needmoreparams(client, "MODE");
     this->mode_cmd(client, message);
-  }
-  else if (message.get_command() == "INVITE") {
+  } else if (message.get_command() == "INVITE") {
     if (message.get_param().size() < 2)
       return this->err_needmoreparams(client, "INVITE");
     this->invite_cmd(client, message);
-  }
-  else if (message.get_command() == "PART") {
+  } else if (message.get_command() == "PART") {
     if (message.get_param().size() < 1)
       return this->err_needmoreparams(client, "PART");
     this->part_cmd(client, message);
-  }
-  else if (message.get_command() == "KICK") {
+  } else if (message.get_command() == "KICK") {
     if (message.get_param().size() < 2)
       return this->err_needmoreparams(client, "KICK");
     this->kick_cmd(client, message);
-  }
-  else if (message.get_command() == "TOPIC") {
+  } else if (message.get_command() == "TOPIC") {
     if (message.get_param().size() == 0)
       return this->err_needmoreparams(client, "TOPIC");
     this->topic_cmd(client, message);
-  }
-  else if (message.get_command() == "LIST") {
+  } else if (message.get_command() == "LIST") {
     this->list_cmd(client, message);
   }
-  // else if (message.get_command() == "QUIT") {
-  //   this->rpl_quit(client, message);
-  // }
 }
 
 Channel *Server::try_action_on_channel_name(Client const *client, std::string const &channel_name) {

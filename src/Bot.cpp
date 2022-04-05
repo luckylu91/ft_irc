@@ -17,7 +17,8 @@ void Bot::receive_message(Message const &message) const {
 void Bot::parse_word_file(std::string const &file_name) {
   std::vector<std::string> lines;
 
-  std::cout << "(Bot) Reading words file... ";
+  std::cout << "Reading words file... ";
+  std::cout.flush();
   extract_lines(file_name, &lines);
   for (std::size_t i = 0; i < lines.size(); i++)
     this->tri.add_string(lines[i]);

@@ -51,8 +51,7 @@ void IOManager::send_message(int client_sockfd, Message const &message) {
     task_tree.insert(std::make_pair(client_sockfd, message.to_string()));
     EV_SET(&triggers, client_sockfd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, 0);
     kevent(kq, &triggers, 1, NULL, 0, NULL);
-  } else
-  {
+  } else {
     (it->second).append(message.to_string());
   }
 }

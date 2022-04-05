@@ -1,0 +1,5 @@
+./ircserv 5555 root --bot liste_mots.txt
+nc -c localhost 5555
+nc irc.libera.chat 6667 < libera_ident1.txt <&1
+nc irc.libera.chat 6667 < libera_ident2.txt <&1
+nc irc.libera.chat 6667 < libera_ident3.txt <&1

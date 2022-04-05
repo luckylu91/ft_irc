@@ -1,0 +1,3 @@
+NICK lzins
+USER lzins * * :lucas zins
+

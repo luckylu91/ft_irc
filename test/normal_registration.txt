@@ -1,7 +1,0 @@
-connect 0
-0 NICK lzins\r\n
-connect 1
-1 NICK
-0 PASS root\r\n
-0 USER lzins * * lzins\r\n
-

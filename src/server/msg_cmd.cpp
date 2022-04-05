@@ -25,8 +25,6 @@ void Server::msg_cmd(std::string const &command, Client const *src, std::string 
   m.add_param(message_str);
   try {
     Client *dest_client = this->find_client_by_nick(msgtarget);
-    if (src == dest_client)
-      throw SameSenderAndRecipientException();
     send_msg_client_client(*this, m, dest_client);
   } catch (NoSuchClientNickException &) {
     try {

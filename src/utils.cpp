@@ -11,6 +11,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <errno.h>
 
 std::string addr_string(struct sockaddr_in addr) {
   std::stringstream ss;

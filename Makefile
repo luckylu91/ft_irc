@@ -2,7 +2,7 @@ SRCS = $(wildcard src/*.cpp) $(wildcard src/server/*.cpp)
 HEADERS = $(wildcard include/*.hpp)
 OBJS = $(SRCS:src/%.cpp=obj/%.o)
 NAME = ircserv
-CFLAGS = -Iinclude -Wall -Wextra -Werror -std=c++98 #3 -fsanitize=address
+CFLAGS = -Iinclude -Wall -Wextra -Werror -std=c++98
 
 all: $(NAME)
 

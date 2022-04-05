@@ -1,0 +1,9 @@
+NICK a
+PASS root
+USER a * * a
+JOIN #lz
+
+NICK b
+PASS root
+USER b * * b
+JOIN #lz

@@ -42,8 +42,7 @@ void Message::parse(std::string input, std::vector<Message> *vec, int sockfd) {
     if (i == std::string::npos) {
       Message::sockfd_incomplete_recv.insert(std::make_pair(sockfd, input));
       return;
-    }
-    else if (i > 0) {
+    } else if (i > 0) {
       message = Message::parse_one(input.substr(0, i));
       vec->push_back(message);
     }

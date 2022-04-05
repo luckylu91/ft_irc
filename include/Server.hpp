@@ -15,12 +15,12 @@ struct IOManagerInterface;
 
 class Server {
  public:
-  Server(std::string const &name, std::string const &version, std::string const &password, IOManagerInterface * io_manager);
+  Server(std::string const &name, std::string const &version, std::string const &password, IOManagerInterface *io_manager);
   ~Server();
 
   // utils
-  IOManagerInterface * get_io_manager() { return this->io_manager; }
-  void new_bot(std::string const &name, std::string const &file_name);
+  IOManagerInterface *get_io_manager() { return this->io_manager; }
+  bool new_bot(std::string const &name, std::string const &file_name);
   void new_client(int sockfd, struct sockaddr_in addr);
   void remove_client(Client *client);
   void remove_client_sockfd(int sockfd);
@@ -78,7 +78,7 @@ class Server {
   void topic_cmd(Client *client, Message const &message);
   void rpl_notopic(Client const *client, Channel const *chan) const;
   void rpl_topic(Client const *client, Channel const *channel) const;
-  void rpl_topic_set(Client const * client, Channel const * channel) const;
+  void rpl_topic_set(Client const *client, Channel const *channel) const;
   // list
   void rpl_list(Client const *client, Channel const *channel) const;
   void rpl_listend(Client const *client) const;
@@ -86,9 +86,9 @@ class Server {
   void rpl_channelmodeis(Client const *client, Channel const *channel) const;
   // nick
   void rpl_nick(Client const *client, std::string const nick);
-  //ban
-  void rpl_banlist(Client const *client, Channel const * channel, std::string const nick);
-  void rpl_endofbanlist(Client const *client, Channel const * channel);
+  // ban
+  void rpl_banlist(Client const *client, Channel const *channel, std::string const nick);
+  void rpl_endofbanlist(Client const *client, Channel const *channel);
   // errors
   void err_needmoreparams(Client const *client, std::string const &command) const;
   void err_alreadyregistred(Client const *client) const;
@@ -119,5 +119,5 @@ class Server {
   std::vector<Client *> clients;
   std::vector<Channel *> channels;
   std::string creation_time_string;
-  IOManagerInterface * io_manager;
+  IOManagerInterface *io_manager;
 };

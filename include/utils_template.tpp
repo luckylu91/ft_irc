@@ -87,11 +87,3 @@ int add_if_no_in(A const& a, Vector& vec) {
     return 1;
   }
 }
-
-template <class Vector>
-typename Vector::value_type select_randomly(Vector const& vec) {
-  if (vec.size() < 0)
-    throw EmptyVectorException();
-  std::size_t i = static_cast<std::size_t>(rand() % static_cast<int>(vec.size()));
-  return vec[i];
-}

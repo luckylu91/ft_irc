@@ -152,10 +152,9 @@ void Server::rpl_channelmodeis(Client const* client, Channel const* channel) con
   m.add_param(channel->mode_to_string());
   this->send_message(client, m);
 }
-//NICK
+// NICK
 
-void Server::rpl_nick(Client const *client, std::string const nick)
-{
+void Server::rpl_nick(Client const* client, std::string const nick) {
   Message m;
   m.set_source(client->name());
   m.set_command("NICK");
@@ -164,7 +163,7 @@ void Server::rpl_nick(Client const *client, std::string const nick)
   for_each_in_vector(SendMessageToClientDifferent(client, m), client->related_clients());
 }
 
-void Server::rpl_topic_set(Client const * client, Channel const * channel) const {
+void Server::rpl_topic_set(Client const* client, Channel const* channel) const {
   Message m;
   m.set_source(client->name());
   m.set_command("TOPIC");
@@ -173,18 +172,14 @@ void Server::rpl_topic_set(Client const * client, Channel const * channel) const
   this->send_message(client, m);
 }
 
-void Server::rpl_banlist(Client const *client, Channel const * channel, std::string const nick)
-{
-
+void Server::rpl_banlist(Client const* client, Channel const* channel, std::string const nick) {
   Message m = this->base_message(client, RPL_BANLIST);
   m.add_param(channel->get_name());
   m.add_param(nick);
   this->send_message(client, m);
 }
 
-void Server::rpl_endofbanlist(Client const *client, Channel const * channel)
-{
-
+void Server::rpl_endofbanlist(Client const* client, Channel const* channel) {
   Message m = this->base_message(client, RPL_ENDOFBANLIST);
   m.add_param(channel->get_name());
   m.add_param(":End of channel ban list");
