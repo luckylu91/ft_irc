@@ -8,7 +8,7 @@
 // PRIVMSG & NOTICE
 
 static void send_msg_client_client(Server &server, Message &message, Client const *dest) {
-  message.insert_param(0, dest->name());
+  message.insert_param(0, dest->get_nick());
   server.send_message(dest, message);
 }
 
